@@ -5,10 +5,15 @@ from pydantic import BaseModel
 from typing import List
 import os
 import json
+import datetime
 
 # 引入 ConnectOnion
 from connectonion import Agent, Memory, GoogleCalendar
-import datetime
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ADHD_DIR = os.path.join(BASE_DIR, "adhd_brain")
+HANDOVER_NOTE_FILE = os.path.join(ADHD_DIR, "handover_note.json")
+os.makedirs(ADHD_DIR, exist_ok=True)
 
 # --- 1. 定义工具 (Tools) ---
 
@@ -36,10 +41,6 @@ def save_structured_plan(tasks_json: str) -> str:
         ]
     """
     date = datetime.date.today().isoformat()
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    adhd_dir = os.path.join(base_dir, "adhd_brain")
-    os.makedirs(adhd_dir, exist_ok=True)
-
     try:
         tasks = json.loads(tasks_json)
         if not isinstance(tasks, list):
@@ -47,7 +48,7 @@ def save_structured_plan(tasks_json: str) -> str:
     except Exception as e:
         return f"❌ 保存失败：请传入 JSON 列表字符串。错误: {e}"
 
-    path = os.path.join(adhd_dir, f"daily_tasks_{date}.json")
+    path = os.path.join(ADHD_DIR, f"daily_tasks_{date}.json")
     with open(path, "w") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=2)
 
@@ -66,10 +67,36 @@ def get_legacy_tasks() -> str:
     return memory.read_memory(f"plan_{yesterday}")
 
 
+def load_handover_note():
+    """
+    读取守护者写入的交接留言，读后标记为已读。
+    返回格式：{"date": "...", "content": ["..."], "status": "read", "read_at": "..."}
+    """
+    if not os.path.exists(HANDOVER_NOTE_FILE):
+        return None
+    try:
+        with open(HANDOVER_NOTE_FILE, "r") as f:
+            data = json.load(f)
+    except Exception:
+        return None
+    raw_content = (data or {}).get("content", [])
+    if isinstance(raw_content, str):
+        raw_content = [raw_content]
+    content_list = [c.strip() for c in raw_content if isinstance(c, str) and c.strip()]
+    if not content_list:
+        return None
+    data["content"] = content_list
+    data["status"] = "read"
+    data["read_at"] = datetime.datetime.now().isoformat()
+    with open(HANDOVER_NOTE_FILE, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return data
+
+
 # --- 2. 定义系统提示词 (The Brain) ---
 # 这里我们将《时间盒》的方法论转化为 AI 的指令
 
-system_prompt = """
+base_system_prompt = """
 你是一位专为 ADHD 用户设计的“时间盒（Timeboxing）”管理教练。你的目标是帮助用户减轻认知负荷，将混乱的任务转化为可视化的、可执行的时间块。
 
 ## 你的核心工作流程：
@@ -119,6 +146,16 @@ system_prompt = """
 ...
 """
 
+handover_note = load_handover_note()
+system_prompt = base_system_prompt
+handover_banner = None
+if handover_note:
+    note_date = handover_note.get("date", "未知日期")
+    note_content_list = handover_note.get("content", [])
+    note_lines = "\n".join(f"- {c}" for c in note_content_list)
+    system_prompt += f"\n\n# 昨日守护者的留言（{note_date}）\n{note_lines}\n请在规划时优先考虑这条留言。"
+    handover_banner = f"📩 昨天的你有一条留言：‘{'；'.join(note_content_list)}’"
+
 # --- 3. 创建 Agent ---
 
 agent = Agent(
@@ -132,6 +169,8 @@ agent = Agent(
 
 print("🤖 时间盒教练已启动！(输入 'q' 退出)")
 print("你可以说：'今天要做周报、写论文、还有回几个微信和买菜。'")
+if handover_banner:
+    print(handover_banner)
 
 while True:
     user_input = input("\n你: ")

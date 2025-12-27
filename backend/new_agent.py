@@ -12,10 +12,17 @@
 import os
 import json
 import datetime
+import random
 from typing import Optional
 
 from dotenv import load_dotenv
 from connectonion import Agent, Memory, GoogleCalendar, TodoList, WebFetch
+from rich.console import Console
+from rich.panel import Panel
+try:
+    import cowsay
+except Exception:
+    cowsay = None
 
 # --- 常量与路径 ---
 
@@ -27,6 +34,62 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 PARKING_LOT_FILE = os.path.join(ADHD_DIR, "parking_lot_buffer.md")
 STATE_FILE = os.path.join(ADHD_DIR, "guardian_state.json")
+HANDOVER_NOTE_FILE = os.path.join(ADHD_DIR, "handover_note.json")
+
+console = Console()
+_latest_plan_data = None
+_victory_shown = False
+_handover_written = False
+
+VICTORY_ASCII = [
+    r"""
+         \   ^__^
+          \  (oo)\_______
+             (__)\       )\/\
+                 ||----w |
+                 ||     ||
+    """,
+    r"""
+      /\_/\
+     ( o.o )
+      > ^ <
+    """,
+    r"""
+          __
+         / _)
+  .-^^^-/ /
+ __/       /
+<__.|_|-|_|
+    """,
+    r"""
+          __.-._   _.-.__
+       .-`      '.'      `-.
+     .'                     `.
+    /    YODA SAYS:            \
+   |   Do or do not. There is   |
+   |          no try.           |
+    \                           /
+     `.                       .'
+       `-._               _.-'
+            `-..___..-'
+    """,
+]
+
+VICTORY_PHRASES = [
+    "任务杀手！",
+    "多巴胺满载！",
+    "今日成就解锁！",
+    "收工！把快乐装进口袋。",
+    "大脑电量回满，去享受奖励吧！",
+]
+
+_COWSAY_COWS = [
+    "cow",
+    "tux",
+    "dragon",
+    "kitty",
+    "stegosaurus",
+]
 
 
 # --- 工具函数 / 工具类 ---
@@ -106,10 +169,10 @@ def load_plan_for_startup(date: Optional[str] = None):
         return None, f"计划格式异常（期望列表）：{path}"
     plan_date = _plan_date_from_path(path)
     normalized = _normalize_plan_tasks(tasks, plan_date)
-    return (
-        {"path": path, "plan_date": plan_date, "tasks": tasks, "normalized_tasks": normalized},
-        None,
-    )
+    plan_data = {"path": path, "plan_date": plan_date, "tasks": tasks, "normalized_tasks": normalized}
+    global _latest_plan_data
+    _latest_plan_data = plan_data
+    return (plan_data, None)
 
 
 def _format_dt(dt_value: Optional[datetime.datetime], plan_date: datetime.date) -> str:
@@ -138,6 +201,156 @@ def _determine_focus_task(normalized_tasks: list):
         if start_dt > now:
             return "upcoming", task
     return "finished", timed_tasks[-1]
+
+
+def _parse_parking_lot_entries() -> list:
+    """提取停车场条目文本，去除时间戳。"""
+    if not os.path.exists(PARKING_LOT_FILE):
+        return []
+    with open(PARKING_LOT_FILE, "r") as f:
+        content = f.read().strip()
+    if not content:
+        return []
+    entries = []
+    for block in content.split("\n\n"):
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if not lines:
+            continue
+        if lines[0].startswith("[") and "]" in lines[0]:
+            lines = lines[1:]
+        if not lines:
+            continue
+        entries.append(" ".join(lines))
+    return entries
+
+
+def _get_last_timed_end(normalized_tasks: list) -> Optional[datetime.datetime]:
+    """获取最后一个有时间的任务的结束时间。"""
+    timed = [t for t in normalized_tasks if t.get("start_dt") or t.get("end_dt")]
+    if not timed:
+        return None
+    last = timed[-1]
+    return last.get("end_dt") or last.get("start_dt")
+
+
+def _is_plan_finished(plan_data: dict) -> bool:
+    """检查当前时间是否已超过最后一个任务的结束时间。"""
+    last_end = _get_last_timed_end(plan_data.get("normalized_tasks", []))
+    if not last_end:
+        return False
+    now = datetime.datetime.now().astimezone()
+    return now > last_end
+
+
+def _build_daily_report(plan_data: dict) -> str:
+    """生成每日复盘报告文本。"""
+    tasks = plan_data.get("tasks", [])
+    normalized = plan_data.get("normalized_tasks", [])
+    total_tasks = len(tasks)
+
+    minutes = 0
+    for task in normalized:
+        start = task.get("start_dt")
+        end = task.get("end_dt") or start
+        if start and end:
+            delta = (end - start).total_seconds() / 60
+            if delta > 0:
+                minutes += delta
+    hours_text = f"{minutes/60:.1f}".rstrip("0").rstrip(".") or "0"
+
+    report_lines = [f"你今天专注了 {hours_text} 小时，击败了 {total_tasks} 个任务。"]
+
+    parking_entries = _parse_parking_lot_entries()
+    if parking_entries:
+        joined = "；".join(parking_entries)
+        report_lines.append(f"你今天忍住没去做的 {len(parking_entries)} 件事：{joined}")
+        report_lines.append("心理暗示：这些是你延迟满足的战利品，现在可以去做了！")
+    else:
+        report_lines.append("今天没有停车场条目，专注力拉满！")
+
+    return "\n".join(report_lines)
+
+
+def _victory_lap_text(plan_data: dict) -> str:
+    phrase = random.choice(VICTORY_PHRASES)
+    report = _build_daily_report(plan_data)
+
+    # 尝试用 cowsay 随机角色输出奖励，如果不可用则用内置 ASCII
+    art = random.choice(VICTORY_ASCII)
+    if cowsay:
+        try:
+            list_fn = getattr(cowsay, "list_cows", None)
+            available_all = list_fn() if callable(list_fn) else _COWSAY_COWS
+            available = [c for c in _COWSAY_COWS if c in available_all] or available_all
+            cow_name = random.choice(available) if available else "cow"
+            get_fn = getattr(cowsay, "get_output_string", None)
+            if callable(get_fn):
+                art = get_fn(cow_name, phrase)
+            else:
+                cow_fn = getattr(cowsay, cow_name, None)
+                if callable(cow_fn):
+                    art = cow_fn(phrase)
+        except Exception:
+            art = random.choice(VICTORY_ASCII)
+
+    return f"{art}\n\n{report}"
+
+
+def show_victory_lap(plan_data: dict) -> None:
+    """ASCII 剧场 Victory Lap。"""
+    text = _victory_lap_text(plan_data)
+    console.print(Panel(text, title="Victory Lap", border_style="green", expand=True))
+
+
+def write_handover_note(contents: list[str]) -> str:
+    payload = {
+        "date": datetime.date.today().isoformat(),
+        "content": contents,
+        "status": "unread",
+    }
+    with open(HANDOVER_NOTE_FILE, "w") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    return f"已写入交接留言（{len(contents)} 条）：{HANDOVER_NOTE_FILE}"
+
+
+def prompt_handover_note() -> None:
+    """向用户收集交接留言，可多条，写入 handover_note.json。"""
+    global _handover_written
+    if _handover_written:
+        return
+    notes: list[str] = []
+    print("\n📩 有什么想嘱咐明天的计划师（Planner）的吗？比如“明天早起”或“把没写完的论文加进去”？")
+    while True:
+        note = input("留言内容（回车跳过）：").strip()
+        if not note:
+            if not notes:
+                print("已跳过留言。")
+            break
+        notes.append(note)
+        print(f"已记录：{note}")
+        more = input("还要添加吗？输入 y 继续，回车结束：").strip().lower()
+        if not more.startswith("y"):
+            break
+    _handover_written = True
+    if not notes:
+        return
+    path_msg = write_handover_note(notes)
+    print(path_msg)
+
+
+def maybe_handle_completion(plan_data: Optional[dict] = None) -> None:
+    """若任务已全部结束，则触发胜利巡游、复盘和交接。"""
+    global _victory_shown
+    data = plan_data
+    if data is None:
+        data, _ = load_plan_for_startup()
+    if not data or _victory_shown:
+        return
+    if not _is_plan_finished(data):
+        return
+    _victory_shown = True
+    show_victory_lap(data)
+    prompt_handover_note()
 
 
 def read_structured_plan(date: Optional[str] = None) -> str:
@@ -263,6 +476,19 @@ def announce_plan_on_startup() -> None:
     else:
         print("⚠️ 计划为空，请先生成今天的时间盒。")
 
+    maybe_handle_completion(plan_data)
+
+
+def ask_start_smoothness(plan_data: Optional[dict] = None) -> None:
+    """启动时主动询问启动顺利度，便于后续是否触发“先做5分钟”提示。"""
+    if _victory_shown:
+        return
+    data = plan_data or _latest_plan_data
+    if data and _is_plan_finished(data):
+        return
+    print("\n👋 开始顺利吗？哪些任务有阻力或不想动？")
+    print("说明：顺利的就直接开干，我不会重复“先做5分钟”；卡住的才用微步和 5 分钟起步。")
+
 
 class ActivityMonitor:
     """
@@ -308,6 +534,12 @@ guardian_system_prompt = """
 你是 “ADHD 专注力守护者 (The Guardian Agent)” —— 一个常驻后台的执行教练。
 你的目标：在时间盒执行期，用可视化进度与温柔提醒，陪伴用户完成任务。
 
+## 严禁幻觉 / 边界
+- 只能基于 `read_structured_plan()` 读取的计划内容说话，**禁止**自己生成/猜测新的任务或明天/未来的计划。
+- 如果计划文件缺失或无法读取，明确说“未找到计划文件”，请用户去时间盒教练 (Planner) 生成；不要臆测或替用户规划。
+- 不要为明天写计划，不要补充不存在的任务时间，不能擅自改写任务标题。
+- 若用户问“明天/新计划”，回复“我是执行守护者，不负责排程，请用时间盒教练生成”，不要输出任何假计划。
+
 ## 状态机 (保持状态文件同步)
 - Idle：等待下一个时间盒。
 - Starting：时间到但用户未动，启动“微步”引导，使用 TodoList 清单。
@@ -320,9 +552,13 @@ guardian_system_prompt = """
 - `get_current_datetime()`：报时、感知当前日期。
 
 ## 核心玩法
+0) 开始前问询
+   - 第一句先问：“开始顺利吗？哪些任务有阻力或不想动？”
+   - 用户说“顺利/已经开始”的任务，不要反复说“先做5分钟”；只对卡住/抗拒/拖延的任务用“先做5分钟”微步。
+
 1) 微步启动 (Starting)
-   - 当任务开始但用户迟疑：TodoList.clear()，生成 3-5 个超小起步动作，调用 add()/start()，逐项 complete()。
-   - 提醒：“只做 5 分钟就好”。
+   - 当用户表明“卡住/不想开始”或你检测到迟疑时：TodoList.clear()，生成 3-5 个超小起步动作，调用 add()/start()，逐项 complete()。
+   - 只对卡住的任务提醒：“只做 5 分钟就好”；顺利的任务无需重复。
 
 2) 念头停车场 (Running)
    - 离题请求：不要立刻喂结果。
@@ -378,12 +614,14 @@ def main():
     print("🛡️ ADHD 专注力守护者已启动！(输入 'q' 退出)")
     print("提示：先用 Agent A (时间盒教练) 生成计划，再让我来执行。")
     announce_plan_on_startup()
+    ask_start_smoothness(_latest_plan_data)
     while True:
         user_input = input("\n你: ")
         if user_input.lower() in ["q", "quit", "exit"]:
             break
         response = guardian_agent.input(user_input)
         print(f"\n守护者: {response}")
+        maybe_handle_completion()
 
 
 if __name__ == "__main__":
