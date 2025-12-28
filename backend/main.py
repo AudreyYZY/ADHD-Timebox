@@ -10,6 +10,9 @@ import datetime
 # 引入 ConnectOnion
 from connectonion import Agent, Memory, GoogleCalendar
 
+CONFIRM_KEYWORDS = ("确认", "同意", "可以", "没问题", "ok", "OK", "好", "行", "同步", "go", "yes")
+_plan_synced = False
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ADHD_DIR = os.path.join(BASE_DIR, "adhd_brain")
 HANDOVER_NOTE_FILE = os.path.join(ADHD_DIR, "handover_note.json")
@@ -91,6 +94,71 @@ def load_handover_note():
     with open(HANDOVER_NOTE_FILE, "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     return data
+
+
+def _normalize_time_str(value: str, default_date: str = None) -> str:
+    """
+    将时间字符串标准化为 'YYYY-MM-DD HH:MM' 以兼容 GoogleCalendar。
+    - 接受含秒的时间或 ISO 格式。
+    - 若仅有时间且提供 default_date，则补全日期。
+    """
+    if not value or not isinstance(value, str):
+        return None
+    value = value.strip()
+    # 如果只传了时间，补上日期
+    if default_date and (" " not in value and "T" not in value):
+        value = f"{default_date} {value}"
+    # 尝试解析 ISO/标准格式
+    try:
+        dt = datetime.datetime.fromisoformat(value.replace("T", " "))
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        pass
+    # 尝试包含秒的 "YYYY-MM-DD HH:MM:SS"
+    try:
+        dt = datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return None
+
+
+def _sync_today_plan_to_calendar(date: str = None) -> str:
+    """读取今日计划并批量同步到 Google Calendar；若今日无计划，提示先生成。"""
+    target_date = date or datetime.date.today().isoformat()
+    path = os.path.join(ADHD_DIR, f"daily_tasks_{target_date}.json")
+    if not os.path.exists(path):
+        return (
+            f"⚠️ 今日计划未找到：{path}\n"
+            f"请先用时间盒教练生成今日的 daily_tasks_{target_date}.json，再同步日历。"
+        )
+    try:
+        with open(path, "r") as f:
+            tasks = json.load(f)
+    except Exception as exc:
+        return f"❌ 读取计划失败：{exc}"
+    if not isinstance(tasks, list) or not tasks:
+        return "❌ 计划为空或格式异常，无法同步日历。"
+
+    success, errors = 0, []
+    for task in tasks:
+        title = task.get("title") or "未命名任务"
+        raw_start = task.get("start")
+        raw_end = task.get("end")
+        start = _normalize_time_str(raw_start, target_date)
+        end = _normalize_time_str(raw_end, target_date)
+        if not start or not end:
+            errors.append(f"{title} 开始/结束时间格式无法解析：{raw_start} -> {raw_end}，已跳过。")
+            continue
+        try:
+            calendar.create_event(title=title, start=start, end=end)
+            success += 1
+        except Exception as exc:
+            errors.append(f"{title} 同步失败：{exc}")
+
+    summary = f"✅ 已同步 {success}/{len(tasks)} 条任务到日历。"
+    if errors:
+        summary += " ⚠️ " + " | ".join(errors)
+    return summary
 
 
 # --- 2. 定义系统提示词 (The Brain) ---
@@ -176,6 +244,13 @@ while True:
     user_input = input("\n你: ")
     if user_input.lower() in ["q", "quit", "exit"]:
         break
+
+    # 用户口头确认后，自动尝试同步日历（防止模型迟迟不调用）
+    if not _plan_synced and any(k in user_input for k in CONFIRM_KEYWORDS):
+        sync_msg = _sync_today_plan_to_calendar()
+        print(f"\n[日历同步] {sync_msg}")
+        if sync_msg.startswith("✅"):
+            _plan_synced = True
 
     # 将用户输入传给 Agent
     response = agent.input(user_input)
