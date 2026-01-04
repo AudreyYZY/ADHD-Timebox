@@ -1,9 +1,16 @@
 """Orchestrator agent for Phase 1 MAS routing."""
 
+import datetime
+import json
+import os
+from typing import Optional
+
 from connectonion import Agent
 
 from agents.focus_agent import FocusAgent
 from agents.planner_agent import PlannerAgent
+from agents.reward_agent import RewardAgent
+from tools.parking_tools import ParkingService
 from tools.plan_tools_v2 import PlanManager
 
 
@@ -56,7 +63,13 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         # 预热 PlannerAgent，便于直接转接；PlanManager 提升为路由层依赖以做状态注入
         self.plan_manager = PlanManager()
         self.planner_agent = PlannerAgent(plan_manager=self.plan_manager)
-        self.focus_agent = FocusAgent()
+        self.parking_service = ParkingService()
+        self.reward_agent = RewardAgent(plan_manager=self.plan_manager)
+        self.focus_agent = FocusAgent(
+            plan_manager=self.plan_manager,
+            parking_service=self.parking_service,
+            reward_toolkit=self.reward_agent.toolkit,
+        )
         # 会话锁：若被占用，则后续用户输入将直接转发至锁定 Agent
         self.locked_agent = None
         self.escape_words = {"退出", "exit", "stop", "解锁", "终止", "结束"}
@@ -68,6 +81,12 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         - Otherwise classify intent, select agent, and update lock per envelope status.
         """
         normalized = user_input.strip().lower()
+
+        if self._is_finish_day_intent(normalized):
+            self.locked_agent = None
+            summary = self.reward_agent.summarize_day()
+            print(summary)
+            return summary
 
         # Escape hatch: force unlock
         if self.locked_agent and any(word in normalized for word in self.escape_words):
@@ -82,8 +101,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             envelope = self._safe_handle(self.locked_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(self.locked_agent, envelope)
-            print(content)
-            return content
+            final_content = self._maybe_attach_daily_reward(content)
+            print(final_content)
+            return final_content
 
         # 每次请求都创建一个全新的、一次性的 Agent 实例
         # name="orchestrator_temp" 甚至可以是随机数，确保无残留记忆
@@ -115,6 +135,14 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
                 active_agent = self.planner_agent
             elif target == "FOCUS":
                 active_agent = self.focus_agent
+            elif target == "PARKING":
+                result = self.parking_service.dispatch_task(
+                    content=user_input, task_type="search", source="orchestrator"
+                )
+                self.locked_agent = None
+                final_result = self._maybe_attach_daily_reward(result)
+                print(final_result)
+                return final_result
 
             if not active_agent:
                 msg = f"暂未实现对 {target} 的处理。"
@@ -125,20 +153,23 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             envelope = self._safe_handle(active_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(active_agent, envelope)
-            print(content)
-            return content
+            final_content = self._maybe_attach_daily_reward(content)
+            print(final_content)
+            return final_content
 
         if raw.startswith("REPLY:"):
             reply = raw.replace("REPLY:", "", 1).strip()
             self.locked_agent = None
-            print(reply)
-            return reply
+            final_reply = self._maybe_attach_daily_reward(reply)
+            print(final_reply)
+            return final_reply
 
         # Fallback
         fallback = f"REPLY: {raw}"
         self.locked_agent = None
-        print(raw)
-        return fallback
+        final_fallback = self._maybe_attach_daily_reward(fallback)
+        print(final_fallback)
+        return final_fallback
 
     def _safe_handle(self, agent, user_input: str) -> dict:
         """调用目标 Agent 的 handle，并包装成信封；Planner 会自动注入 System State。"""
@@ -179,3 +210,51 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             self.locked_agent = agent
         else:
             self.locked_agent = None
+
+    # -- 奖励 / 总结钩子 ------------------------------------------------
+
+    def _is_finish_day_intent(self, normalized_input: str) -> bool:
+        keywords = [
+            "结束",
+            "收工",
+            "收尾",
+            "总结",
+            "finish day",
+            "end of day",
+            "today done",
+        ]
+        return any(key in normalized_input for key in keywords)
+
+    def _maybe_attach_daily_reward(self, content: str) -> str:
+        reward = self._auto_reward_if_completed()
+        if reward:
+            return f"{content}\n\n---\n{reward}" if content else reward
+        return content
+
+    def _auto_reward_if_completed(self) -> Optional[str]:
+        all_done, plan_date = self._all_tasks_completed()
+        if not all_done:
+            return None
+        log_path = os.path.join(
+            self.reward_agent.toolkit.log_dir,
+            f"daily_summary_{plan_date.isoformat()}.md",
+        )
+        if os.path.exists(log_path):
+            return None
+        return self.reward_agent.summarize_day()
+
+    def _all_tasks_completed(self) -> tuple[bool, datetime.date]:
+        plan_path = self.reward_agent._locate_plan_path()
+        if not plan_path:
+            return False, datetime.date.today()
+        plan_date = self.plan_manager._plan_date_from_path(plan_path)
+        try:
+            with open(plan_path, "r", encoding="utf-8") as f:
+                tasks = json.load(f)
+        except Exception:
+            return False, plan_date
+        if not isinstance(tasks, list) or not tasks:
+            return False, plan_date
+        statuses = [str(t.get("status") or "").lower() for t in tasks]
+        all_done = statuses and all(s in {"done", "completed", "complete"} for s in statuses)
+        return all_done, plan_date

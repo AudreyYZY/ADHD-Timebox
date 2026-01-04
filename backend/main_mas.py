@@ -1,12 +1,5 @@
 """Phase 1 entrypoint for the MAS orchestrator."""
 
-import os
-from dotenv import load_dotenv
-
-# 加载 .env 环境变量
-base_dir = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(os.path.join(base_dir, ".env"))
-
 from agents.orchestrator import OrchestratorAgent
 
 
