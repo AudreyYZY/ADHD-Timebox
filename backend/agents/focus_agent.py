@@ -60,6 +60,7 @@ class FocusAgent:
 
     def handle(self, user_input: str) -> dict:
         """单轮对话入口，强制注入 System Context 以防漂移。"""
+        idle_alert = user_input.strip().startswith("[IDLE_ALERT]")
         if self.parking_service._session_id is None:
             self.parking_service.start_session()
         payload = self._build_payload(user_input)
@@ -80,6 +81,9 @@ class FocusAgent:
         else:
             content = raw.strip()
             status = STATUS_CONTINUE
+
+        if idle_alert:
+            status = STATUS_FINISHED
 
         return {"content": content, "status": status}
 

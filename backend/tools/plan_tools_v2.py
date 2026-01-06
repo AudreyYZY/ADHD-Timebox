@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import re
 from typing import Dict, List, Optional, Tuple, Union
 
 
@@ -79,137 +80,172 @@ class PlanManager:
 
     def create_daily_plan(self, tasks: Union[List[Dict], str]) -> str:
         """
-        覆盖写入今日计划。
-
-        Args:
-            tasks: 任务列表。每个任务必须是字典，且严格包含以下键：
-                - "title": (str) 任务标题。注意：必须用 "title"，不要用 "name" 或 "task"。
-                - "start": (str) 开始时间，格式 "YYYY-MM-DD HH:MM"。
-                - "end": (str) 结束时间，格式 "YYYY-MM-DD HH:MM"。
-                - "type": (str, optional) 任务类型，默认为 "work"。
+        [智能合并模式] 更新或创建今日计划。
+        如果今日已有计划，会将新传入的任务合并进去（Upsert），而不是直接覆盖。
+        这防止了 Agent 只传新任务导致旧任务丢失的问题。
         """
-        # 【新增 3】函数入口证明
-        debug_log(f"create_daily_plan 被调用！参数类型: {type(tasks)}")
-
-        # 记录一下原始数据的前 100 个字符，看看传进来的是啥
+        # 【新增】函数入口证明
+        debug_log(f"create_daily_plan (Smart Merge) 被调用！参数类型: {type(tasks)}")
         debug_log(f"原始数据摘要: {str(tasks)[:100]}...")
 
+        # --- 1. 参数解析与校验 ---
         original_tasks = tasks
         if isinstance(tasks, str):
             try:
                 tasks = json.loads(tasks)
             except json.JSONDecodeError as exc:
                 err_msg = f"JSON 解析崩溃: {exc}"
-                debug_log(err_msg)  # 【新增】记录错误
-                return (
-                    "❌ 计划生成失败：tasks 需为列表或可解析的 JSON 字符串，"
-                    f"解析错误：{exc}"
-                )
+                debug_log(err_msg)
+                return f"❌ 计划生成失败：tasks 解析错误：{exc}"
 
         if not isinstance(tasks, list):
             err_msg = f"类型错误: 期望 list, 实际是 {type(original_tasks).__name__}"
-            debug_log(err_msg)  # 【新增】记录错误
-            return (
-                "❌ 计划生成失败：tasks 必须是任务字典的列表，"
-                f"当前类型 {type(original_tasks).__name__}。"
-            )
+            debug_log(err_msg)
+            return f"❌ 计划生成失败：tasks 必须是列表。"
 
         now = datetime.datetime.now().astimezone()
         plan_date = now.date()
-        normalized_tasks = []
-        errors: List[str] = []
+
+        # --- 2. 预处理新任务 (Normalization) ---
+        # 这里我们先处理新进来的任务，确保格式正确
+        normalized_new_tasks = []
+        errors = []
 
         for idx, task in enumerate(tasks):
             if not isinstance(task, dict):
-                errors.append(f"第 {idx + 1} 条任务格式需为字典。")
                 continue
 
             title = (task.get("title") or "").strip()
             if not title:
-                errors.append(f"第 {idx + 1} 条缺少标题。")
-                continue
+                continue  # 跳过无标题任务
 
+            # 时间解析
             start_dt = self._normalize_to_dt(task.get("start"), plan_date)
             end_dt = self._normalize_to_dt(task.get("end"), plan_date)
+
+            # 基础逻辑校验
             if not start_dt or not end_dt:
-                errors.append(
-                    f"{title} 的时间格式无法解析：{task.get('start')} -> {task.get('end')}"
-                )
-                continue
-            if start_dt.date() != plan_date or end_dt.date() != plan_date:
-                errors.append(f"{title} 的日期不是今天（{plan_date.isoformat()}）。")
-                continue
-            if end_dt <= start_dt:
-                errors.append(f"{title} 的结束时间必须晚于开始时间。")
-                continue
-            if start_dt < now:
-                errors.append(
-                    f"{title} 的开始时间 ({start_dt.strftime('%H:%M')}) 已早于当前时间。"
-                )
+                errors.append(f"任务 '{title}' 时间格式错误")
                 continue
 
+            # 简单的日期检查
+            if start_dt.date() != plan_date:
+                # 如果Agent传了非今天的日期，这里记录一下但暂不严格阻断
+                debug_log(f"Warning: 任务 {title} 日期 {start_dt.date()} 不是今天")
+                pass
+
             normalized_task = {**task}
-            normalized_task["id"] = (
-                task.get("id") or f"task_{int(now.timestamp())}_{idx}"
-            )
+            # 确保有ID，如果没有就用 title 或时间戳生成
+            if not normalized_task.get("id"):
+                normalized_task["id"] = f"task_{int(now.timestamp())}_{idx}"
+
             normalized_task["title"] = title
             normalized_task["start"] = start_dt.strftime("%Y-%m-%d %H:%M")
             normalized_task["end"] = end_dt.strftime("%Y-%m-%d %H:%M")
             normalized_task.setdefault("type", "work")
-            normalized_task.setdefault("status", "pending")  # 默认状态
-            normalized_tasks.append(normalized_task)
+            # 新任务默认pending，除非传入了特定状态
+            normalized_task.setdefault("status", "pending")
 
-        if errors:
-            debug_log(f"校验失败，errors: {errors}")  # 【新增】记录校验错误
-            return "❌ 计划未保存：" + "；".join(errors)
-        if not normalized_tasks:
-            debug_log("未发现有效任务")  # 【新增】记录无任务
-            return "❌ 计划未保存：未提供有效任务。"
+            normalized_new_tasks.append(normalized_task)
 
-        normalized_tasks.sort(key=lambda t: t.get("start", ""))
+        if not normalized_new_tasks and errors:
+            debug_log(f"任务校验失败: {errors}")
+            return "❌ 无法添加任务：" + "；".join(errors)
 
-        path = self._plan_path(plan_date.isoformat())
-        debug_log(f"准备写入文件，目标路径: {path}")  # 【新增】记录路径
+        # --- 3. 核心修改：读取旧数据并合并 (Smart Merge) ---
 
-        try:
-            with open(path, "w") as f:
-                json.dump(normalized_tasks, f, ensure_ascii=False, indent=2)
-            debug_log("✅ 文件写入成功！")  # 【新增】确认写入
-        except Exception as e:
-            debug_log(f"❌ 致命错误：文件写入失败 - {e}")  # 【新增】捕获 IO 错误
-            return f"❌ 文件写入失败：{e}"
-
-        # 自动同步到日历
-        sync_available = bool(self.calendar and hasattr(self.calendar, "create_event"))
-        sync_success = 0
-        sync_failure = 0
-        failure_details: List[str] = []
-
-        for task in normalized_tasks:
-            title = task.get("title") or task.get("id") or "未命名任务"
-            sync_msg = self._sync_calendar(
-                title, task.get("start", ""), task.get("end", "")
-            )
-            if "同步失败" in sync_msg:
-                sync_failure += 1
-                failure_details.append(f"{title}: {sync_msg.lstrip('，')}")
-            elif sync_msg:
-                sync_success += 1
-
-        sync_summary = ""
-        if not sync_available:
-            sync_summary = " 日历同步未执行：Calendar 未配置或不支持。"
-        else:
-            sync_summary = (
-                f" 日历同步：成功 {sync_success} 个，失败 {sync_failure} 个。"
-            )
-            if failure_details:
-                sync_summary += " 失败详情：" + "；".join(failure_details)
-
-        return (
-            f"✅ 今日计划已保存，共 {len(normalized_tasks)} 条任务。路径：{path}"
-            f"{sync_summary}"
+        # 尝试读取今天已有的文件
+        existing_tasks, path, _ = self._load_tasks(
+            plan_date.isoformat(), create_if_missing=True
         )
+        if existing_tasks is None:
+            existing_tasks = []
+
+        # 使用字典进行合并，以 title 或 id 作为唯一键
+        # 策略：以 existing_tasks 为基础，用 normalized_new_tasks 去更新它
+        task_map = {}
+        for t in existing_tasks:
+            key = t.get("id") or t.get("title")
+            task_map[key] = t
+
+        added_count = 0
+        updated_count = 0
+        sync_success = 0
+        sync_errors: List[str] = []
+
+        for new_t in normalized_new_tasks:
+            key = new_t.get("id") or new_t.get("title")
+            if not key:
+                continue
+
+            old_task = task_map.get(key)
+            merged_task = {**(old_task or {}), **new_t}
+
+            # 保留旧状态（若新任务未显式传入）
+            if old_task and "status" not in new_t:
+                merged_task["status"] = old_task.get("status", "pending")
+            merged_task.setdefault("status", "pending")
+
+            # 承袭或写回关联的 calendar event id
+            merged_task["google_event_id"] = merged_task.get("google_event_id") or (
+                old_task.get("google_event_id") if old_task else None
+            )
+
+            action = "update" if old_task else "create"
+            # 如果内容完全未变且已有 event id，则跳过多余的日历调用
+            needs_sync = True
+            if old_task:
+                unchanged = (
+                    merged_task.get("google_event_id")
+                    and merged_task.get("start") == old_task.get("start")
+                    and merged_task.get("end") == old_task.get("end")
+                    and merged_task.get("title") == old_task.get("title")
+                )
+                needs_sync = not unchanged
+
+            if needs_sync:
+                synced, event_id, sync_msg = self._sync_calendar(merged_task, action)
+                merged_task["google_event_id"] = event_id or merged_task.get(
+                    "google_event_id"
+                )
+                if synced:
+                    sync_success += 1
+                elif sync_msg:
+                    sync_errors.append(
+                        f"{merged_task.get('title')}: {sync_msg.lstrip('，')}"
+                    )
+
+            task_map[key] = merged_task
+            if old_task:
+                updated_count += 1
+            else:
+                added_count += 1
+
+        final_tasks = list(task_map.values())
+        final_tasks.sort(key=lambda t: t.get("start", ""))
+
+        # --- 4. 写入文件 ---
+        debug_log(f"准备写入文件，目标路径: {path}，任务数: {len(final_tasks)}")
+        write_err = self._write_tasks(path, final_tasks)
+        if write_err:
+            debug_log(f"❌ 致命错误：文件写入失败 - {write_err}")
+            return f"❌ 文件写入失败：{write_err}"
+
+        # --- 5. 日历同步反馈 ---
+        sync_msg = ""
+        if sync_success:
+            sync_msg = f" (已同步 {sync_success} 个到日历)"
+        if sync_errors:
+            sync_msg = f"{sync_msg}（同步失败 {len(sync_errors)} 个，详见日志）"
+
+        action_msg = []
+        if added_count:
+            action_msg.append(f"新增 {added_count} 个")
+        if updated_count:
+            action_msg.append(f"更新 {updated_count} 个")
+
+        result_msg = f"✅ 计划已更新。{'，'.join(action_msg)}。当前共有 {len(final_tasks)} 个任务。{sync_msg}"
+        return result_msg
 
     def update_schedule(
         self, task_id: str, new_start: str, new_end: str, force: bool = False
@@ -251,6 +287,8 @@ class PlanManager:
 
         if conflicts:
             for c in conflicts:
+                # 优先删除对应的日历事件，防止“旧事件叠加”
+                self._sync_calendar(c, "delete")
                 tasks.remove(c)
 
         start_text = start_dt.strftime("%Y-%m-%d %H:%M")
@@ -268,18 +306,25 @@ class PlanManager:
                 "end": end_text,
                 "type": "work",
                 "status": "pending",  # 默认状态
+                "google_event_id": None,
             }
             tasks.append(new_task)
             target_task = new_task
             created = True
 
         tasks.sort(key=lambda t: t.get("start", ""))
-        with open(path, "w") as f:
-            json.dump(tasks, f, ensure_ascii=False, indent=2)
 
-        sync_msg = self._sync_calendar(
-            target_task.get("title") or task_id, start_text, end_text
+        action_for_calendar = (
+            "create" if created or not target_task.get("google_event_id") else "update"
         )
+        _, event_id, sync_msg = self._sync_calendar(target_task, action_for_calendar)
+        if event_id:
+            target_task["google_event_id"] = event_id
+
+        write_err = self._write_tasks(path, tasks)
+        if write_err:
+            return f"❌ 文件写入失败：{write_err}"
+
         action = "已添加" if created else "已更新"
         replaced = f"，替换了 {len(conflicts)} 个冲突任务" if conflicts else ""
         return f"✅ {action} {task_id}: {start_text[11:]}-{end_text[11:]}{replaced}{sync_msg}"
@@ -344,6 +389,15 @@ class PlanManager:
         if not isinstance(tasks, list):
             return None, path, "计划文件格式应为列表。"
         return tasks, path, None
+
+    def _write_tasks(self, path: str, tasks: List[Dict]) -> Optional[str]:
+        """Persist tasks list to disk, returning error text on failure."""
+        try:
+            with open(path, "w") as f:
+                json.dump(tasks, f, ensure_ascii=False, indent=2)
+            return None
+        except Exception as exc:
+            return str(exc)
 
     def _normalize_to_dt(
         self, raw_value: Optional[str], plan_date: datetime.date
@@ -429,54 +483,131 @@ class PlanManager:
         )
         return normalized
 
-    def _sync_calendar(self, title: str, start: str, end: str) -> str:
-        """尝试同步到 Google Calendar，失败不抛异常。"""
-        # 1. 检查日历对象是否存在
-        if not self.calendar or isinstance(self.calendar, str):  # 防御性编程
-            debug_log(f"[Calendar] 未配置或类型错误: {type(self.calendar)}")
-            return ""
+    def _format_calendar_time(self, value: Optional[str]) -> Optional[str]:
+        """Normalize stored 'YYYY-MM-DD HH:MM' to ISO-like 'YYYY-MM-DDTHH:MM:SS'."""
+        if not value or not isinstance(value, str):
+            return None
+        text = value.strip()
+        if "T" not in text and " " in text:
+            text = text.replace(" ", "T")
+        if "T" not in text:
+            return text
+        # Ensure seconds are present to satisfy GoogleCalendar parser
+        if len(text.split("T", 1)[1]) == 5:
+            text = f"{text}:00"
+        return text
 
-        # 检查是否是那个 Fallback 类 (Dummy)
+    def _extract_event_id(self, response: Union[str, Dict]) -> Optional[str]:
+        """Best-effort extraction of event id from ConnectOnion GoogleCalendar responses."""
+        if isinstance(response, dict):
+            if "id" in response:
+                return str(response.get("id"))
+            if "event_id" in response:
+                return str(response.get("event_id"))
+        if not response:
+            return None
+        text = str(response)
+        match = re.search(r"Event ID:\s*([^\s]+)", text)
+        if match:
+            return match.group(1).strip()
+        match = re.search(r"Event deleted:\s*([^\s]+)", text)
+        if match:
+            return match.group(1).strip()
+        return None
+
+    def _sync_calendar(self, task: Dict, action: str) -> Tuple[bool, Optional[str], str]:
+        """
+        尝试同步到 Google Calendar，失败不抛异常。
+        返回 (是否成功, event_id, 反馈文案)；action: create/update/delete
+        """
+        title = task.get("title") or task.get("id") or "未命名任务"
+        event_id = task.get("google_event_id")
+        start = task.get("start")
+        end = task.get("end")
+
+        # 1. 防御性校验
+        if not self.calendar or isinstance(self.calendar, str):
+            debug_log(f"[Calendar] 未配置或类型错误: {type(self.calendar)}")
+            return False, event_id, ""
         if hasattr(self.calendar, "reason"):
             debug_log(f"[Calendar] 处于 Fallback 模式: {self.calendar.reason}")
-            return ""
+            return False, event_id, ""
 
-        if not hasattr(self.calendar, "create_event"):
-            debug_log("[Calendar] 对象缺少 create_event 方法")
-            return ""
-
-        # 2. 格式清洗：将 "2026-01-03 19:30" 转为 "2026-01-03T19:30:00"
-        # Google Calendar API 通常更喜欢 ISO 格式
-        def to_iso(time_str):
-            try:
-                if "T" not in time_str:
-                    # 补全秒数和 T
-                    return time_str.replace(" ", "T") + ":00"
-                return time_str
-            except Exception:
-                return time_str
-
-        iso_start = to_iso(start)
-        iso_end = to_iso(end)
-
-        debug_log(f"[Calendar] 尝试写入: {title} | {iso_start} -> {iso_end}")
-
-        try:
-            # 尝试调用，优先适配常见库的参数名
-            try:
-                self.calendar.create_event(
-                    title=title, start_time=iso_start, end_time=iso_end
-                )
-            except TypeError:
-                # 再次尝试另一种参数风格
-                self.calendar.create_event(title=title, start=iso_start, end=iso_end)
-
-            debug_log(f"[Calendar] ✅ 写入成功: {title}")
-            return "，并已同步到日历"
-
-        except Exception as exc:
-            # 【关键】把具体的报错写进日志文件
+        iso_start = self._format_calendar_time(start)
+        iso_end = self._format_calendar_time(end)
+        if action in {"create", "update"} and (not iso_start or not iso_end):
             debug_log(
-                f"[Calendar] ❌ 写入失败: {exc} | 参数: {title}, {iso_start}-{iso_end}"
+                f"[Calendar] 时间格式异常，跳过同步: {title} | {start}-{end} ({action})"
             )
-            return f"，但日历同步失败：{exc}"
+            return False, event_id, ""
+
+        # 2. 删除旧事件（用于冲突清理）
+        if action == "delete":
+            if not event_id:
+                debug_log(f"[Calendar] 跳过删除：任务无 event_id {title}")
+                return False, None, ""
+            if not hasattr(self.calendar, "delete_event"):
+                debug_log("[Calendar] 对象缺少 delete_event 方法")
+                return False, event_id, ""
+            try:
+                try:
+                    resp = self.calendar.delete_event(event_id=event_id)
+                except TypeError:
+                    resp = self.calendar.delete_event(event_id)
+                debug_log(f"[Calendar] ✅ 删除成功 {event_id} | 响应: {resp}")
+                return True, None, ""
+            except Exception as exc:
+                debug_log(f"[Calendar] ❌ 删除失败 {event_id}: {exc}")
+                return False, event_id, f"，但日历同步失败：{exc}"
+
+        # 3. 创建新事件
+        def _create_event() -> Tuple[bool, Optional[str], str]:
+            if not hasattr(self.calendar, "create_event"):
+                debug_log("[Calendar] 对象缺少 create_event 方法")
+                return False, event_id, ""
+            try:
+                try:
+                    resp = self.calendar.create_event(
+                        title=title, start_time=iso_start, end_time=iso_end
+                    )
+                except TypeError:
+                    resp = self.calendar.create_event(
+                        title=title, start=iso_start, end=iso_end
+                    )
+                new_id = self._extract_event_id(resp) or event_id
+                debug_log(f"[Calendar] ✅ 创建成功 {title} | id={new_id} | 响应: {resp}")
+                return True, new_id, "，并已同步到日历"
+            except Exception as exc:
+                debug_log(
+                    f"[Calendar] ❌ 创建失败 {title} {iso_start}-{iso_end}: {exc}"
+                )
+                return False, event_id, f"，但日历同步失败：{exc}"
+
+        # 4. 更新事件，失败则降级创建
+        if action == "update" and event_id and hasattr(self.calendar, "update_event"):
+            try:
+                try:
+                    resp = self.calendar.update_event(
+                        event_id=event_id,
+                        title=title,
+                        start_time=iso_start,
+                        end_time=iso_end,
+                    )
+                except TypeError:
+                    resp = self.calendar.update_event(
+                        event_id,
+                        title=title,
+                        start=iso_start,
+                        end=iso_end,
+                    )
+                new_id = self._extract_event_id(resp) or event_id
+                debug_log(f"[Calendar] ✅ 更新成功 {title} | id={new_id} | 响应: {resp}")
+                return True, new_id, "，并已同步到日历"
+            except Exception as exc:
+                debug_log(
+                    f"[Calendar] 更新失败，尝试重新创建 {title} ({event_id}): {exc}"
+                )
+                return _create_event()
+
+        # 默认走创建逻辑
+        return _create_event()

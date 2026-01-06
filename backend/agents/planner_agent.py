@@ -58,6 +58,12 @@ class PlannerAgent:
     ):
         self.calendar = calendar or self._init_calendar()
         self.plan_manager = plan_manager or PlanManager(calendar=self.calendar)
+
+        # 补丁：如果传入的 plan_manager 没有 calendar，手动注入
+        # 这解决了 Orchestrator 初始化 PlanManager 时未传入 Calendar 的问题
+        if self.plan_manager.calendar is None:
+            self.plan_manager.calendar = self.calendar
+
         self.agent = Agent(
             name="planner_agent_v2",
             model=model,

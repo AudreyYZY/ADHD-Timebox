@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import re
 import subprocess
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -31,6 +32,7 @@ class ContextTool:
     """
     负责提供前台窗口和当前任务状态，避免 LLM 自行猜测。
     - get_active_window(): 返回 macOS 前台应用与窗口标题。
+    - get_idle_seconds(): 返回系统空闲秒数（macOS，仅在 ioreg 可用时）。
     - get_focus_state(): 返回当前时间、计划路径、当下/下一任务及剩余时间。
     """
 
@@ -63,6 +65,33 @@ class ContextTool:
             return "前台窗口查询超时。"
         except Exception as exc:
             return f"获取前台窗口失败：{exc}"
+
+    def get_idle_seconds(self) -> Optional[int]:
+        """基于 ioreg 读取系统空闲时长（秒），仅在 macOS 可用。"""
+        try:
+            output = subprocess.check_output(["ioreg", "-c", "IOHIDSystem"], timeout=2)
+        except FileNotFoundError:
+            return None
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
+
+        text = ""
+        try:
+            text = output.decode("utf-8", errors="ignore")
+        except Exception:
+            return None
+
+        match = re.search(r'HIDIdleTime\" = (\d+)', text)
+        if not match:
+            return None
+
+        try:
+            nanoseconds = int(match.group(1))
+            return int(nanoseconds / 1_000_000_000)
+        except Exception:
+            return None
 
     def get_focus_state(self) -> Dict[str, Any]:
         """

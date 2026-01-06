@@ -101,9 +101,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             envelope = self._safe_handle(self.locked_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(self.locked_agent, envelope)
-            final_content = self._maybe_attach_daily_reward(content)
-            print(final_content)
-            return final_content
+            # final_content = self._maybe_attach_daily_reward(content) # Removed auto-reward
+            print(content)
+            return content
 
         # 每次请求都创建一个全新的、一次性的 Agent 实例
         # name="orchestrator_temp" 甚至可以是随机数，确保无残留记忆
@@ -128,7 +128,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             parts = raw.split("|", 1)
             target = parts[0].replace("CALL:", "").strip().upper()
             reason = parts[1].strip() if len(parts) > 1 else ""
-            print(f">> [系统路由] 正在转接至 {target}...{f' 理由：{reason}' if reason else ''}")
+            print(
+                f">> [系统路由] 正在转接至 {target}...{f' 理由：{reason}' if reason else ''}"
+            )
 
             active_agent = None
             if target == "PLANNER":
@@ -140,9 +142,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
                     content=user_input, task_type="search", source="orchestrator"
                 )
                 self.locked_agent = None
-                final_result = self._maybe_attach_daily_reward(result)
-                print(final_result)
-                return final_result
+                # final_result = self._maybe_attach_daily_reward(result) # Removed auto-reward
+                # 不再打印，避免调用方重复显示
+                return result
 
             if not active_agent:
                 msg = f"暂未实现对 {target} 的处理。"
@@ -153,23 +155,23 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             envelope = self._safe_handle(active_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(active_agent, envelope)
-            final_content = self._maybe_attach_daily_reward(content)
-            print(final_content)
-            return final_content
+            # final_content = self._maybe_attach_daily_reward(content) # Removed auto-reward
+            print(content)
+            return content
 
         if raw.startswith("REPLY:"):
             reply = raw.replace("REPLY:", "", 1).strip()
             self.locked_agent = None
-            final_reply = self._maybe_attach_daily_reward(reply)
-            print(final_reply)
-            return final_reply
+            # final_reply = self._maybe_attach_daily_reward(reply) # Removed auto-reward
+            print(reply)
+            return reply
 
         # Fallback
         fallback = f"REPLY: {raw}"
         self.locked_agent = None
-        final_fallback = self._maybe_attach_daily_reward(fallback)
-        print(final_fallback)
-        return final_fallback
+        # final_fallback = self._maybe_attach_daily_reward(fallback) # Removed auto-reward
+        print(fallback)
+        return fallback
 
     def _safe_handle(self, agent, user_input: str) -> dict:
         """调用目标 Agent 的 handle，并包装成信封；Planner 会自动注入 System State。"""
@@ -177,7 +179,10 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         try:
             resp = agent.handle(payload)
         except Exception as exc:
-            return {"content": f"[{agent.__class__.__name__} 错误] {exc}", "status": STATUS_FINISHED}
+            return {
+                "content": f"[{agent.__class__.__name__} 错误] {exc}",
+                "status": STATUS_FINISHED,
+            }
         return self._normalize_envelope(resp)
 
     def _build_payload(self, agent, user_input: str) -> str:
@@ -205,7 +210,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         return {"content": str(resp), "status": STATUS_FINISHED}
 
     def _update_lock(self, agent, envelope: dict):
-        status = (envelope.get("status") if isinstance(envelope, dict) else STATUS_FINISHED) or STATUS_FINISHED
+        status = (
+            envelope.get("status") if isinstance(envelope, dict) else STATUS_FINISHED
+        ) or STATUS_FINISHED
         if str(status).upper() == STATUS_CONTINUE:
             self.locked_agent = agent
         else:
@@ -256,5 +263,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         if not isinstance(tasks, list) or not tasks:
             return False, plan_date
         statuses = [str(t.get("status") or "").lower() for t in tasks]
-        all_done = statuses and all(s in {"done", "completed", "complete"} for s in statuses)
+        all_done = statuses and all(
+            s in {"done", "completed", "complete"} for s in statuses
+        )
         return all_done, plan_date
