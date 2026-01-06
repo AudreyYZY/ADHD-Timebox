@@ -9,6 +9,12 @@ from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+try:
+    # Preferred package name (avoids runtime warning in duckduckgo_search)
+    from ddgs import DDGS  # type: ignore
+except ImportError:
+    from duckduckgo_search import DDGS  # type: ignore
+
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -83,6 +89,11 @@ class ParkingService:
         Retrieve summary for the current or specified session.
         """
         target_session = session_id or self._session_id
+
+        # 如果 session_id 为空，展示所有最近 session（当前简单实现仅展示全部）
+        if not target_session:
+            return "📭 本次专注期间没有暂存的念头。"
+
         tasks = self._load_tasks()
         session_tasks = [
             t
@@ -134,6 +145,8 @@ class ParkingService:
 
     def end_session(self) -> str:
         """End active session and return a formatted summary."""
+        if not self._session_id:
+            return "📭 本次专注期间没有暂存的念头。"
         summary = self.get_session_summary()
         self._session_id = None
         return summary
@@ -181,6 +194,20 @@ class ParkingService:
             with open(log_path, "a", encoding="utf-8") as f:
                 f.write(message + "\n")
 
+    def _format_result_for_log(self, result: Optional[str]) -> List[str]:
+        """Normalize a potentially multi-line result into concise log lines."""
+        if result is None:
+            return ["(无返回结果)"]
+        lines: List[str] = []
+        for raw in str(result).splitlines():
+            line = raw.strip()
+            if not line:
+                continue
+            lines.append(line)
+            if len(lines) >= 20:
+                break
+        return lines or ["(无返回结果)"]
+
     def _process_task_background(self, task_id: str):
         """Execute background work for search tasks without blocking user flow."""
         self._update_task(task_id, {"status": TaskStatus.PROCESSING.value})
@@ -207,44 +234,83 @@ class ParkingService:
             self._log_to_daily(
                 f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ✅ 完成: {content[:30]}"
             )
+            for line in self._format_result_for_log(result):
+                self._log_to_daily(f"   → {line}")
         except Exception as exc:  # pragma: no cover - defensive fallback
             self._update_task(
                 task_id, {"status": TaskStatus.FAILED.value, "error": str(exc)}
             )
             self._log_to_daily(
-                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ❌ 失败: {content[:30]} - {exc}"
+                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ❌ 失败: {content[:30]}"
             )
+            self._log_to_daily(f"   → 错误: {exc}")
 
-    def _perform_search(self, query: str) -> str:
-        """
-        Use a temporary Agent equipped with WebFetch to research the query.
-        Fixed based on WebFetch documentation limitations.
-        """
+    def _internet_search(self, query: str) -> str:
+        """Search DuckDuckGo and return a formatted summary."""
+        query_text = (query or "").strip()
+        if not query_text:
+            return "未提供查询内容。"
+
         try:
-            # 引入组件
+            with DDGS() as ddgs:
+                results = list(ddgs.text(query_text, max_results=3))
+        except Exception as exc:
+            message = str(exc)
+            lowered = message.lower()
+            if "429" in message or "too many requests" in lowered:
+                return "搜索请求过于频繁，请稍后再试。"
+            if "timeout" in lowered:
+                return "搜索服务暂时不可用"
+            return f"搜索失败: {message}"
+
+        if not results:
+            return "未找到相关信息，建议换个关键词。"
+
+        lines: List[str] = ["🔍 搜索结果：", ""]
+        for idx, item in enumerate(results, start=1):
+            title = (item.get("title") or "无标题").strip()
+            url = (
+                item.get("href")
+                or item.get("url")
+                or item.get("link")
+                or item.get("source")
+                or ""
+            )
+            snippet = (
+                item.get("body")
+                or item.get("snippet")
+                or item.get("description")
+                or ""
+            )
+            snippet = " ".join(str(snippet).split())
+            if len(snippet) > 100:
+                snippet = snippet[:100].rstrip() + "..."
+
+            lines.append(f"{idx}. {title}")
+            if snippet:
+                lines.append(f"   {snippet}")
+            if url:
+                lines.append(f"   来源: {url}")
+            lines.append("")
+
+        lines.append(f"（共 {len(results)} 条结果，完整内容见 current_parking.json）")
+        return "\n".join(lines).rstrip()
+
+    def _fetch_with_webfetch(self, url: str) -> str:
+        """Fallback to WebFetch for direct URLs."""
+        try:
             from connectonion import Agent, WebFetch
         except ImportError:
             return "[系统错误] 无法导入 ConnectOnion 组件。"
 
+        system_instruction = (
+            "你使用 WebFetch 抓取并总结网页内容。"
+            "只处理已经提供的 URL，不要尝试搜索或猜测其他链接。"
+            "输出简洁摘要和关键要点。"
+        )
+
         try:
-            # [关键修改] 提示词适配 WebFetch 的能力
-            # WebFetch 只能处理 URL，不能处理关键词搜索。
-            # 我们通过 System Prompt 引导 Agent 尝试构建 URL (如 Wikipedia) 或 告知用户需要 URL。
-
-            system_instruction = (
-                "你是一个基于 WebFetch 工具的网页分析助手。"
-                "【重要】你的工具 WebFetch 只能接收 URL (例如 https://example.com)，不能接收搜索关键词。"
-                "1. 如果用户提供的是一个 URL：请使用 fetch 或 analyze_page 工具获取内容并总结。"
-                "2. 如果用户提供的是关键词（非 URL）："
-                "   - 尝试猜测相关的 Wikipedia URL (例如 https://en.wikipedia.org/wiki/Keyword) 并尝试抓取。"
-                "   - 或者直接告诉用户：'WebFetch 工具无法进行搜索，请提供具体的 URL'。"
-                "不要尝试编造不存在的 URL。"
-            )
-
-            # 初始化 Agent
-            # 根据文档，WebFetch 不需要参数初始化
             web_tool = WebFetch()
-
             searcher = Agent(
                 name="parking_searcher",
                 model="co/gemini-2.5-pro",
@@ -252,20 +318,24 @@ class ParkingService:
                 system_prompt=system_instruction,
                 quiet=True,
             )
-
-            # 构建 Prompt，引导模型正确调用工具
-            prompt = f"请分析以下内容：\n\n{query}\n\n如果这是网址，请总结它；如果这不是网址，请尝试通过构造 URL (如维基百科) 来获取信息。"
-
-            # 执行
+            prompt = (
+                "请抓取并总结以下网页的核心信息，给出要点式摘要：\n"
+                f"{url}\n"
+                "不要进行额外搜索。"
+            )
             result = searcher.input(prompt)
             return str(result)
+        except Exception as exc:
+            return f"[处理失败] 网页抓取出错: {exc}"
 
-        except Exception as e:
-            # 捕获所有工具调用层面的错误，防止 500 崩溃
-            import traceback
-
-            traceback.print_exc()
-            return f"[处理失败] Agent 遇到错误: {str(e)}"
+    def _perform_search(self, query: str) -> str:
+        """
+        Search-first flow: keyword uses DuckDuckGo, URL keeps WebFetch summary.
+        """
+        query_text = (query or "").strip()
+        if query_text.lower().startswith(("http://", "https://")):
+            return self._fetch_with_webfetch(query_text)
+        return self._internet_search(query_text)
 
 
 class ParkingToolkit:

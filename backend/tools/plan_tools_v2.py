@@ -69,11 +69,13 @@ class PlanManager:
                 if task["end_dt"]
                 else (task["raw_end"] or "-")
             )
+            duration = self._format_duration(task["start_dt"], task["end_dt"])
+            duration_mark = f" ({duration}分钟)" if duration else ""
             title = task.get("title") or f"任务{idx}"
             status = task.get("status", "pending")
             status_mark = f" [{status}]" if status != "pending" else ""
             summary_lines.append(
-                f"{idx}. {start_text}-{end_text} | {title}{status_mark}"
+                f"{idx}. {start_text}-{end_text}{duration_mark} | {title}{status_mark}"
             )
         summary = "\n".join(summary_lines)
         return f"{header}\n今日计划：\n{summary}"
@@ -352,10 +354,12 @@ class PlanManager:
                 if task["end_dt"]
                 else (task["raw_end"] or "-")
             )
+            duration = self._format_duration(task["start_dt"], task["end_dt"])
+            duration_mark = f" ({duration}分钟)" if duration else ""
             title = task.get("title") or f"任务{idx}"
             status = task.get("status", "pending")
             lines.append(
-                f"{idx}. {start_text}-{end_text} | {title} [{status}] (id={task.get('id', '?')})"
+                f"{idx}. {start_text}-{end_text}{duration_mark} | {title} [{status}]"
             )
         return "\n".join(lines)
 
@@ -482,6 +486,20 @@ class PlanManager:
             )
         )
         return normalized
+
+    def _format_duration(
+        self,
+        start_dt: Optional[datetime.datetime],
+        end_dt: Optional[datetime.datetime],
+    ) -> Optional[int]:
+        """Calculate duration in minutes if both times are valid and positive."""
+        if not start_dt or not end_dt:
+            return None
+        try:
+            minutes = int((end_dt - start_dt).total_seconds() // 60)
+            return minutes if minutes > 0 else None
+        except Exception:
+            return None
 
     def _format_calendar_time(self, value: Optional[str]) -> Optional[str]:
         """Normalize stored 'YYYY-MM-DD HH:MM' to ISO-like 'YYYY-MM-DDTHH:MM:SS'."""
