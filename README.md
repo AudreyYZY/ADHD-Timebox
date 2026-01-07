@@ -1,3 +1,105 @@
+# ADHD Timebox Agent
+
+这是一个专为 ADHD 用户设计的智能时间管理助手，基于“时间盒（Timeboxing）”方法论。它不仅是一个日程表，更是一个能理解你状态、帮你拆解任务、并在你执行时提供陪伴的 AI 教练。
+
+## ✨ 主要功能
+
+*   **智能规划**：将模糊的想法转化为结构化的时间盒计划。
+*   **任务拆解**：自动将大任务拆解为可执行的 15-60 分钟小块。
+*   **双向同步**：与 Google Calendar 无缝集成，保持日程实时更新。
+*   **多模式运行**：
+    *   **单体模式 (Single Mode)**：专注于日程规划和简单的执行陪伴。
+    *   **多智能体模式 (MAS Mode)**：包含专注监测、念头停泊（Parking Lot）、奖励机制等高级功能。
+
+## 🚀 快速开始
+
+### 1. 环境准备
+
+确保你的系统已安装 Python 3.10 或更高版本。
+
+```bash
+# 克隆仓库 (如果你是从 GitHub 下载)
+git clone <repository_url>
+cd ADHD-Timebox
+
+# 创建虚拟环境
+python3 -m venv venv
+
+# 激活虚拟环境
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+```
+
+### 2. 安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. 配置凭证
+
+#### Google Calendar 凭证
+为了让 Agent 管理你的日历，你需要配置 Google Calendar API：
+1.  前往 [Google Cloud Console](https://console.cloud.google.com/) 创建一个项目。
+2.  启用 **Google Calendar API**。
+3.  创建 **OAuth 2.0 Client IDs** (Desktop app)。
+4.  下载 JSON 凭证文件，重命名为 `credentials.json` 并放置在项目根目录（或 `ConnectOnion/` 目录下，取决于库的配置，建议放在根目录）。
+5.  首次运行时，系统会弹出浏览器窗口进行授权，授权后会生成 `token.json`。
+
+#### LLM API Key
+本项目使用 `connectonion` 框架连接大模型。你需要配置相应的 API Key（例如 Gemini、OpenAI 等）。
+请设置环境变量或创建 `.env` 文件（如果支持）：
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+# 或
+export OPENAI_API_KEY="your_api_key_here"
+```
+*(具体使用的模型在 `backend/main.py` 中配置为 `co/gemini-2.5-pro`，请确保你有访问权限或在代码中修改为其他模型)*
+
+### 4. 启动 Agent
+
+#### 🟢 模式一：单体教练 (推荐初次使用)
+适合快速规划今日日程。
+
+```bash
+python backend/main.py
+```
+**交互示例**：
+> 你: "我今天要写周报，还要洗衣服，大概下午2点开始。"
+> 教练: (自动生成时间盒计划并询问是否同步到日历)
+
+#### 🔵 模式二：多智能体系统 (MAS)
+包含完整的“执行-监测-奖励”闭环。
+
+```bash
+python backend/main_mas.py
+```
+**功能**：
+- **Orchestrator**: 中央路由，识别你是要规划、还是要开始专注、或者是突然有了杂念。
+- **Focus Agent**: 专注时的伴侣，检测走神。
+- **Idle Watcher**: (需要额外权限) 监测电脑空闲状态，提醒你回到任务。
+- **Parking Lot**: "记一下..." 功能，把干扰想法暂存，不打断当前心流。
+
+## 📂 目录结构说明
+
+- `backend/adhd_brain/`: Agent 的“大脑”，存储记忆、日志和生成的计划文件。
+- `backend/agents/`: 各个智能体的实现代码 (Focus, Planner, Reward 等)。
+- `backend/tools/`: 实用工具集 (日历工具、空闲检测等)。
+- `backend/main.py`: 单体模式入口。
+- `backend/main_mas.py`: 多智能体模式入口。
+
+## ❓ 常见问题
+
+**Q: 启动时报错 `ModuleNotFoundError: No module named 'connectonion'`?**
+A: 请确保你已激活虚拟环境并运行了 `pip install -r requirements.txt`。
+
+**Q: 日历无法同步？**
+A: 请检查 `credentials.json` 是否存在且有效。首次运行需要手动在浏览器中点击授权。
+
+**Q: 如何修改使用的 AI 模型？**
+A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)，找到 `model="co/gemini-2.5-pro"` 并修改为你支持的模型名称 (如 `gpt-4o`, `claude-3-5-sonnet` 等，需 `connectonion` 支持)。
 # ADHD-Timebox
 
 ### 一. 项目简介

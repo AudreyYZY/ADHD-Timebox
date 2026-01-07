@@ -1,2 +1,12 @@
-ddgs
+fastapi
+uvicorn
+pydantic
 duckduckgo-search
+connectonion>=0.6.0
+python-dotenv
+litellm
+openai
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+cowsay
