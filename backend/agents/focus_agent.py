@@ -71,6 +71,8 @@ class FocusAgent:
     def handle(self, user_input: str) -> dict:
         """单轮对话入口，强制注入 System Context 以防漂移。"""
         idle_alert = user_input.strip().startswith("[IDLE_ALERT]")
+        routine_check = user_input.strip().startswith("[ROUTINE_CHECK]")
+
         if self.parking_service._session_id is None:
             self.parking_service.start_session()
         payload = self._build_payload(user_input)
@@ -92,7 +94,9 @@ class FocusAgent:
             content = raw.strip()
             status = STATUS_CONTINUE
 
-        if idle_alert:
+        # 系统级主动提醒（Idle Alert / Routine Check）通常是一次性的，
+        # 发送完提醒后，我们认为这一轮交互结束，等待用户的新输入。
+        if idle_alert or routine_check:
             status = STATUS_FINISHED
 
         return {"content": content, "status": status}

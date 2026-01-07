@@ -19,6 +19,7 @@ class IdleWatcher:
         idle_threshold_seconds: int = 300,
         cooldown_seconds: int = 600,
         focus_only: bool = True,
+        routine_check_seconds: int = 300,  # 新增：每 5 分钟主动检查一次上下文
     ):
         self.context_tool = context_tool or ContextTool()
         self.on_idle = on_idle
@@ -26,10 +27,12 @@ class IdleWatcher:
         self.idle_threshold_seconds = idle_threshold_seconds
         self.cooldown_seconds = cooldown_seconds
         self.focus_only = focus_only
+        self.routine_check_seconds = routine_check_seconds
 
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._last_alert_ts: float = 0.0
+        self._last_routine_check_ts: float = time.time()
         self._warned_idle_unavailable = False
 
     def start(self):
@@ -57,6 +60,16 @@ class IdleWatcher:
             self._stop_event.wait(self.interval_seconds)
 
     def _maybe_fire(self):
+        now_ts = time.time()
+        
+        # 1. 常规上下文检查 (Routine Check) - 针对“勤奋的走神”
+        if self.routine_check_seconds > 0:
+            if now_ts - self._last_routine_check_ts >= self.routine_check_seconds:
+                self._fire_event("routine_check", 0)
+                self._last_routine_check_ts = now_ts
+                # Routine check 不影响 idle alert 的冷却，它们是独立的
+
+        # 2. 空闲检测 (Idle Alert) - 针对“人不在了/发呆”
         idle_seconds = self.context_tool.get_idle_seconds()
         if idle_seconds is None:
             if not self._warned_idle_unavailable:
@@ -64,12 +77,15 @@ class IdleWatcher:
                 self._warned_idle_unavailable = True
             return
 
-        now_ts = time.time()
         if idle_seconds < self.idle_threshold_seconds:
             return
         if now_ts - self._last_alert_ts < self.cooldown_seconds:
             return
 
+        self._fire_event("idle_alert", idle_seconds)
+        self._last_alert_ts = now_ts
+
+    def _fire_event(self, event_type: str, idle_seconds: int):
         focus_state = self.context_tool.get_focus_state()
         if self.focus_only:
             if not isinstance(focus_state, dict):
@@ -79,6 +95,7 @@ class IdleWatcher:
 
         active_window = self.context_tool.get_active_window()
         payload = {
+            "type": event_type,  # idle_alert or routine_check
             "idle_seconds": idle_seconds,
             "active_window": active_window,
             "focus_state": focus_state,
@@ -90,5 +107,3 @@ class IdleWatcher:
                 self.on_idle(payload)
             except Exception as exc:
                 print(f"[IdleWatcher] on_idle 处理失败：{exc}")
-
-        self._last_alert_ts = now_ts

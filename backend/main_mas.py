@@ -7,6 +7,7 @@ from tools.idle_watcher import IdleWatcher
 def _build_idle_handler(orchestrator: OrchestratorAgent):
     def _on_idle(payload):
         try:
+            event_type = payload.get("type", "idle_alert")
             idle_seconds = int(payload.get("idle_seconds") or 0)
             idle_minutes = max(idle_seconds // 60, 1)
             window = payload.get("active_window") or "未知窗口"
@@ -18,10 +19,29 @@ def _build_idle_handler(orchestrator: OrchestratorAgent):
             )
             task_title = (active_task or {}).get("title") or "当前任务"
 
-            message = f"[IDLE_ALERT] 已空闲约 {idle_minutes} 分钟。当前窗口：{window}。当前任务：{task_title}"
+            if event_type == "routine_check":
+                # 主动轮询：检查 Active Window 与 Task 是否相关
+                # 不提 idle 时间，只关注上下文匹配
+                message = f"[ROUTINE_CHECK] 当前窗口：{window}。当前任务：{task_title}"
+            else:
+                # 默认 idle_alert
+                message = f"[IDLE_ALERT] 已空闲约 {idle_minutes} 分钟。当前窗口：{window}。当前任务：{task_title}"
+
             resp = orchestrator.focus_agent.handle(message)
             content = resp.get("content") if isinstance(resp, dict) else str(resp)
-            print(f"\n⚠️ 走神检测\n{content}\n(提示：输入任意内容继续对话)")
+
+            # 如果是 Routine Check 且 Agent 认为应该保持沉默 (<<SILENCE>>)，则不输出任何内容
+            if event_type == "routine_check" and "<<SILENCE>>" in content:
+                return
+
+            # 移除标记，展示真实内容
+            display_content = content.replace("<<SILENCE>>", "").strip()
+            if not display_content:
+                return
+
+            header = "⚠️ 走神检测" if event_type == "idle_alert" else "🛡️ 上下文监测"
+            print(f"\n{header}\n{display_content}\n(提示：输入任意内容继续对话)")
+
         except Exception as exc:
             print(f"[IdleWatcher] 推送提醒失败：{exc}")
 
@@ -34,9 +54,10 @@ def main():
         context_tool=orchestrator.focus_agent.context_tool,
         on_idle=_build_idle_handler(orchestrator),
         interval_seconds=30,
-        idle_threshold_seconds=300,
-        cooldown_seconds=600,
+        idle_threshold_seconds=300,  # 5分钟不动 -> 提醒
+        cooldown_seconds=600,  # 提醒后 10分钟不打扰
         focus_only=True,
+        routine_check_seconds=300,  # 每 5 分钟检查一次窗口相关性 (无论是否动鼠标)
     )
     idle_watcher.start()
 
