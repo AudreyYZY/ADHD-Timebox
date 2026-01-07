@@ -116,7 +116,9 @@
     
     - **自动动词化：** 将模糊的名词（如“周报”）转化为清晰的动作（如“撰写周报”）。
     - **拆解与合并：** 自动将大任务拆解为30分钟内的子任务，或将碎片杂事合并，确保难度适中。
-    - ![[Screenshot 2026-01-06 at 23.02.59.png]]
+ 	<img width="450" height="162" alt="Screenshot 2026-01-06 at 23 02 59" src="https://github.com/user-attachments/assets/6d304854-ef1a-4935-98d8-252928788e61" />
+
+    - 
 	![[Screenshot 2026-01-06 at 23.03.11.png]]
     ![[Screenshot 2026-01-06 at 23.04.23.png]]
 ![[Screenshot 2026-01-06 at 23.04.37.png]]
