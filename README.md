@@ -103,7 +103,8 @@
 **角色：** 系统的大脑与路由中心。
 
 - **意图识别与分发：** 实时监听用户自然语言输入，分析意图并将任务路由至最合适的 Agent（Plan, Focus 或 Reward）。
-![[Screenshot 2026-01-06 at 22.26.08.png]]
+	<img width="448" height="118" alt="Screenshot 2026-01-07 at 11 14 06" src="https://github.com/user-attachments/assets/c111bbc4-e0a5-4438-9865-6b2216267745" />
+
 - **Agent Lock (会话锁定机制)：** 当某个 Agent 进入复杂任务流， 如规划任务 时，Orchestrator 会锁定控制权，直到该 Agent 明确发出 `Task Completed` 信号，才会重新接管调度。这确保了任务上下文的连续性，防止逻辑跳跃。
 
 #### 2. Plan Agent
@@ -116,40 +117,53 @@
     
     - **自动动词化：** 将模糊的名词（如“周报”）转化为清晰的动作（如“撰写周报”）。
     - **拆解与合并：** 自动将大任务拆解为30分钟内的子任务，或将碎片杂事合并，确保难度适中。
- 	<img width="450" height="162" alt="Screenshot 2026-01-06 at 23 02 59" src="https://github.com/user-attachments/assets/6d304854-ef1a-4935-98d8-252928788e61" />
-
-    - 
-	![[Screenshot 2026-01-06 at 23.03.11.png]]
-    ![[Screenshot 2026-01-06 at 23.04.23.png]]
-![[Screenshot 2026-01-06 at 23.04.37.png]]
-- ![[Screenshot 2026-01-06 at 23.07.19.png]]
+  	
+ 	<img width="450" height="162" alt="Screenshot 2026-01-06 at 23 02 59" src="https://github.com/user-attachments/assets/6d304854-ef1a-4935-98d8-252928788e61" /><br>
+	<img width="457" height="184" alt="Screenshot 2026-01-06 at 23 03 11" src="https://github.com/user-attachments/assets/51ccbbcb-0303-435a-8971-99e7002ff9a7" /><br>
+    <img width="459" height="328" alt="Screenshot 2026-01-06 at 23 04 23" src="https://github.com/user-attachments/assets/cf0c7faf-3d64-4221-8aa5-337bd9741bb3" /><br>
+    <img width="476" height="262" alt="Screenshot 2026-01-06 at 23 04 37" src="https://github.com/user-attachments/assets/f216c966-76bc-4472-8ccd-e3e83c73bcda" /><br>
+	<img width="477" height="381" alt="Screenshot 2026-01-07 at 11 15 26" src="https://github.com/user-attachments/assets/b2e19118-e5fb-4931-a80e-1562b876e1b6" /><br>
+	
 - 会自动把这些日程 同步到 google calendar 里
 - **弹性日程 (Dynamic Rescheduling)：** 支持“推迟 30 分钟”等自然语言指令，自动顺延后续计划，防止因一次超时导致整体计划崩塌的挫败感。
-![[Screenshot 2026-01-06 at 23.14.16.png]]
-![[Screenshot 2026-01-06 at 23.14.39.png]]
-![[Screenshot 2026-01-06 at 23.17.05.png]]
-![[Screenshot 2026-01-06 at 23.13.33 1.png]]
+  
+	<img width="446" height="50" alt="Screenshot 2026-01-07 at 11 21 50" src="https://github.com/user-attachments/assets/bc065b07-1dd1-4d1e-b9f3-210615a60cbe" /><br>
+	<img width="446" height="145" alt="Screenshot 2026-01-07 at 11 21 26" src="https://github.com/user-attachments/assets/652aa215-38b5-44ae-abe9-2f989b52ae5b" /><br>
+	<img width="444" height="55" alt="Screenshot 2026-01-07 at 11 21 15" src="https://github.com/user-attachments/assets/b783f00a-935e-4938-9545-a52e8caf00ab" /><br>
+	<img width="482" height="335" alt="Screenshot 2026-01-06 at 23 13 33" src="https://github.com/user-attachments/assets/b66eeb49-9743-433f-a525-e927d53ab16c" /><br>
+
 #### 3. Focus Agent (执行与守护)
 
 **角色：** 心流守护者，负责对抗拖延与维持注意力。
 
 - **微步启动 (Micro-steps)：** 检测到用户犹豫或拖延时，不进行施压，而是给出极低门槛的建议（如“先打开文档就好”），绕过杏仁核的焦虑反应。
-    ![[Screenshot 2026-01-06 at 23.27.24.png]]
+  
+   <img width="445" height="424" alt="Screenshot 2026-01-07 at 11 24 07" src="https://github.com/user-attachments/assets/dfca7774-0a85-4a6c-bded-5c97306854d5" />
+
 - **念头停车场 ：** 当用户在执行中产生杂念 如“突然想查新买的一次性胶片机能不能过安检 ”，Agent 会代替用户在后台搜索并存储摘要，让用户无需切换窗口，保护心流的连续性。
-![[Screenshot 2026-01-06 at 22.30.32.png]]
-![[Screenshot 2026-01-06 at 22.30.03.png]]
+  
+  <img width="670" height="227" alt="Screenshot 2026-01-07 at 11 31 33" src="https://github.com/user-attachments/assets/8b483a11-65e2-4a7a-b5c1-e348c446cf61" /><br>
+  <img width="677" height="235" alt="Screenshot 2026-01-07 at 11 31 51" src="https://github.com/user-attachments/assets/486dfbe0-0043-4f0e-81c7-c179393c9acd" /><br>
+
 - **走神检测 (Distraction Detection)：** 实时监测输入设备状态。如果用户超过 5 分钟无鼠标/键盘操作，系统会主动发出温和提醒，拉回注意力。
-![[Screenshot 2026-01-06 at 22.29.24.png]]
+  
+  <img width="663" height="250" alt="Screenshot 2026-01-07 at 11 30 18" src="https://github.com/user-attachments/assets/491868a1-4d4d-45cd-ad17-a8f829b5152b" /><br>
+
 - **状态追踪：** 负责标记当前正在进行的任务及上下文管理。
-![[Screenshot 2026-01-06 at 23.25.30.png]]
+  
+  <img width="587" height="89" alt="Screenshot 2026-01-07 at 11 27 57" src="https://github.com/user-attachments/assets/b29c2d86-78b9-45a1-b569-0e2a1f284169" /><br>
+
 #### 4. Reward Agent (反馈与激励)
 
 **角色：** 多巴胺提供者。
 
 - **即时正反馈：** 当任务被标记为“完成”时，触发即时奖励。
-    ![[Screenshot 2026-01-06 at 23.28.38.png]]
-- **可视化激励：** 生成趣味性的 ASCII Art（如 Cowsay 动物形象）与鼓励语，为枯燥的任务结尾提供成就感与情绪价值。![[Screenshot 2026-01-06 at 22.28.24.png]]
-![[Screenshot 2026-01-06 at 22.27.55.png]]
+  
+  <img width="475" height="314" alt="Screenshot 2026-01-07 at 11 26 22" src="https://github.com/user-attachments/assets/4dfc6806-c0b2-4efb-b1aa-3213c06d559f" /><br>
+
+- **可视化激励：** 生成趣味性的 ASCII Art（如 Cowsay 动物形象）与鼓励语，为枯燥的任务结尾提供成就感与情绪价值。
+
+  <img width="737" height="459" alt="Screenshot 2026-01-07 at 11 25 36" src="https://github.com/user-attachments/assets/d4ee499c-ace1-4c42-889e-4273ca43e5b2" /><br>
 
 
 
