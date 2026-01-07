@@ -144,6 +144,8 @@
   
   <img width="670" height="227" alt="Screenshot 2026-01-07 at 11 31 33" src="https://github.com/user-attachments/assets/8b483a11-65e2-4a7a-b5c1-e348c446cf61" /><br>
   <img width="677" height="235" alt="Screenshot 2026-01-07 at 11 31 51" src="https://github.com/user-attachments/assets/486dfbe0-0043-4f0e-81c7-c179393c9acd" /><br>
+  还会保存到 thought_parking 文件中
+  <img width="563" height="211" alt="Screenshot 2026-01-07 at 11 36 09" src="https://github.com/user-attachments/assets/a0476cca-ba04-4865-85e6-332d37e32f53" /><br>
 
 - **走神检测 (Distraction Detection)：** 实时监测输入设备状态。如果用户超过 5 分钟无鼠标/键盘操作，系统会主动发出温和提醒，拉回注意力。
   
@@ -232,5 +234,8 @@ Plan Agent 缺乏“状态持久化感知”。尽管代码已经将用户的计
 
 - 新系统：Plan Agent 可以在 Memory 里留个便条——focus_note: "这个用户最近压力大，执行阶段多鼓励，少催促"。Focus Agent 虽然没参与排期，但看到这个便条，对你的语气就会变温柔。它让系统能从过去的互动中学习，产生那些 JSON 字段里装不下的“默契”和“直觉”。 
 
+  <img width="548" height="89" alt="Screenshot 2026-01-07 at 11 34 40" src="https://github.com/user-attachments/assets/17710038-4e6d-4e35-9f41-8f3ebe6cadc5" /><br>
+  <img width="536" height="98" alt="Screenshot 2026-01-07 at 11 34 30" src="https://github.com/user-attachments/assets/34ba26a8-e3d8-446b-ba38-d5c4dbea171d" /><br>
+  <img width="537" height="43" alt="Screenshot 2026-01-07 at 11 34 17" src="https://github.com/user-attachments/assets/8bfb6814-2f76-4f81-ba0c-774623e5e87e" /><br>
 
 
