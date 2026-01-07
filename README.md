@@ -328,6 +328,6 @@ Plan Agent 缺乏“状态持久化感知”。尽管代码已经将用户的计
 
 ### 五、总结与致谢
 
-ADHD Timebox Agent 利用 ConnectOnion 强大的 Memory 能力和灵活的 Multi-Agent 编排，成功将一个“只会看日程表的机械程序”，升级成了一个**“有记忆、懂默契、能进化”**的聪明Agent。
+ADHD Timebox Agent 利用 ConnectOnion 强大的 Memory 能力和灵活的 Multi-Agent 编排，成功将一个“只会看日程表的机械程序”，升级成了一个“有记忆、懂默契、能进化”的聪明Agent。
 感谢 ConnectOnion，让复杂的事情变得简单，让 AI 成为了我大脑的延伸。
 
