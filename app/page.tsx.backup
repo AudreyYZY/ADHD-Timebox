@@ -1,0 +1,1360 @@
+"use client";
+
+import React, { useState, useEffect, useReducer } from "react";
+import {
+  Play,
+  Pause,
+  X,
+  Check,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  BarChart,
+  History,
+  Moon,
+  Sun,
+  Sparkles,
+  Coffee,
+  Heart,
+} from "lucide-react";
+
+/* ===========================================================================
+   A) COMPONENT TREE & PROPS INTERFACES
+===========================================================================
+   
+   App (Main Container)
+    ├── useFocusSession (Hook - Controller)
+    ├── useTaskPool (Hook - Data)
+    │
+    ├── DailyReview (Page)
+    ├── FullScreenFocus (Updated: Handles Running AND Paused states)
+    │
+    └── Home (Page - Standard Layout)
+         ├── HeaderBar
+         ├── MainLayout (Responsive Grid)
+         │    ├── LeftColumn
+         │    │    ├── QuickAddTask
+         │    │    └── TaskPool
+         │    └── RightColumn
+         │         ├── PausedBanner (Only used if we were to drop out of fullscreen, keeping for safety)
+         │         └── CurrentFocusCard
+         │
+         └── DailyReview (Overlay)
+
+===========================================================================
+   B) FRONTEND UI STATE MACHINE (Reducer)
+===========================================================================
+*/
+
+// State Definitions
+const FOCUS_STATES = {
+  IDLE: "idle",
+  RUNNING: "running",
+  PAUSED: "paused",
+  COMPLETED: "completed",
+  ABANDONED: "abandoned",
+} as const;
+
+type FocusState = (typeof FOCUS_STATES)[keyof typeof FOCUS_STATES];
+
+interface Task {
+  id: string;
+  title: string;
+  priority: "urgent" | "medium" | "low";
+}
+
+interface SessionHistory {
+  id: number;
+  date: string;
+  duration: number;
+  outcome: "completed" | "abandoned";
+}
+
+interface FocusStateData {
+  status: FocusState;
+  activeTaskId: string | null;
+  durationMinutes: number;
+  remainingSeconds: number;
+  history: SessionHistory[];
+}
+
+type FocusAction =
+  | { type: "START"; payload: { taskId: string | null; duration: number } }
+  | { type: "PAUSE" }
+  | { type: "RESUME" }
+  | { type: "TICK" }
+  | { type: "ABANDON" }
+  | { type: "RESET_COMPLETED" }
+  | { type: "SET_DURATION"; payload: number };
+
+/* ===========================================================================
+   C) UI LOCKING & MICROCOPY CONSTANTS (ENGLISH)
+===========================================================================
+*/
+
+const MICROCOPY = {
+  idle: {
+    cta: "Start Focus",
+    helper: "Pick a duration",
+    taskInputPlaceholder: "What needs to get done?",
+  },
+  running: {
+    cta: "Focus Mode",
+    subtext: "Stay in the flow.",
+    lockedHint: "Finish this session first.",
+  },
+  paused: {
+    banner: "Session Paused",
+    resumeBtn: "Resume",
+    abandonBtn: "Abandon",
+    subtext: "Take a breath, then jump back in.",
+  },
+  completed: {
+    title: "Session Complete",
+    subtext: "Great work staying focused!",
+    nextAction: "Plan Next Focus",
+  },
+  review: {
+    empty: "No sessions yet. Start a 15-minute box.",
+    statLabel: "Sessions Today",
+    timeLabel: "Total Minutes",
+  },
+};
+
+/* ===========================================================================
+   D) HOOKS / CONTROLLER LAYER
+===========================================================================
+*/
+
+// --- useFocusSession Hook ---
+const initialState: FocusStateData = {
+  status: FOCUS_STATES.IDLE,
+  activeTaskId: null,
+  durationMinutes: 25,
+  remainingSeconds: 25 * 60,
+  history: [],
+};
+
+function focusReducer(
+  state: FocusStateData,
+  action: FocusAction
+): FocusStateData {
+  switch (action.type) {
+    case "START":
+      return {
+        ...state,
+        status: FOCUS_STATES.RUNNING,
+        activeTaskId: action.payload.taskId,
+        durationMinutes: action.payload.duration,
+        remainingSeconds: action.payload.duration * 60,
+      };
+    case "PAUSE":
+      return { ...state, status: FOCUS_STATES.PAUSED };
+    case "RESUME":
+      return { ...state, status: FOCUS_STATES.RUNNING };
+    case "TICK":
+      if (state.status !== FOCUS_STATES.RUNNING) return state;
+      if (state.remainingSeconds <= 0)
+        return { ...state, status: FOCUS_STATES.COMPLETED };
+      return { ...state, remainingSeconds: state.remainingSeconds - 1 };
+    case "ABANDON":
+      const abandonedSession: SessionHistory = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        duration: state.durationMinutes,
+        outcome: "abandoned",
+      };
+      return {
+        ...state,
+        status: FOCUS_STATES.IDLE,
+        activeTaskId: null,
+        history: [abandonedSession, ...state.history],
+      };
+    case "RESET_COMPLETED":
+      const completedSession: SessionHistory = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        duration: state.durationMinutes,
+        outcome: "completed",
+      };
+      return {
+        ...state,
+        status: FOCUS_STATES.IDLE,
+        activeTaskId: null,
+        history: [completedSession, ...state.history],
+      };
+    case "SET_DURATION":
+      return { ...state, durationMinutes: action.payload };
+    default:
+      return state;
+  }
+}
+
+const useFocusSession = () => {
+  const [state, dispatch] = useReducer(focusReducer, initialState);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (state.status === FOCUS_STATES.RUNNING) {
+      interval = setInterval(() => {
+        dispatch({ type: "TICK" });
+      }, 1000);
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [state.status]);
+
+  return {
+    focusState: state.status,
+    remainingSeconds: state.remainingSeconds,
+    activeTaskId: state.activeTaskId,
+    selectedDuration: state.durationMinutes,
+    history: state.history,
+    actions: {
+      start: (taskId: string | null, duration: number) =>
+        dispatch({ type: "START", payload: { taskId, duration } }),
+      pause: () => dispatch({ type: "PAUSE" }),
+      resume: () => dispatch({ type: "RESUME" }),
+      abandon: () => dispatch({ type: "ABANDON" }),
+      reset: () => dispatch({ type: "RESET_COMPLETED" }),
+      setDuration: (mins: number) =>
+        dispatch({ type: "SET_DURATION", payload: mins }),
+    },
+  };
+};
+
+// --- useTaskPool Hook ---
+const useTaskPool = () => {
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: "1", title: "Check Emails", priority: "urgent" },
+    { id: "2", title: "Write Report", priority: "medium" },
+    { id: "3", title: "Tidy Up", priority: "low" },
+  ]);
+
+  const addTask = (
+    title: string,
+    priority: "urgent" | "medium" | "low" = "low"
+  ) => {
+    setTasks([...tasks, { id: Date.now().toString(), title, priority }]);
+  };
+
+  return { tasks, addTask };
+};
+
+/* ===========================================================================
+   E) SUB-COMPONENTS
+===========================================================================
+*/
+
+// Helper: Priority Colors
+const getPriorityColor = (
+  priority: "urgent" | "medium" | "low",
+  isDark: boolean
+) => {
+  switch (priority) {
+    case "urgent": // Red
+      return {
+        dot: "bg-rose-500",
+        shadow: "shadow-rose-500/50",
+        ring: "ring-rose-500",
+      };
+    case "medium": // Yellow
+      return {
+        dot: "bg-amber-400",
+        shadow: "shadow-amber-400/50",
+        ring: "ring-amber-400",
+      };
+    case "low": // Blue
+    default:
+      return {
+        dot: "bg-sky-400",
+        shadow: "shadow-sky-400/50",
+        ring: "ring-sky-400",
+      };
+  }
+};
+
+// 1. HeaderBar
+const HeaderBar = ({
+  toggleReview,
+  isReviewOpen,
+  isDark,
+  toggleTheme,
+}: {
+  toggleReview: () => void;
+  isReviewOpen: boolean;
+  isDark: boolean;
+  toggleTheme: () => void;
+}) => (
+  <div className="flex justify-between items-center py-5 shrink-0">
+    <div className="flex items-center gap-3">
+      <div
+        className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm ${
+          isDark ? "bg-indigo-500" : "bg-white border border-slate-100"
+        }`}
+      >
+        <Clock
+          className={isDark ? "text-white" : "text-indigo-500"}
+          size={22}
+          strokeWidth={2.5}
+        />
+      </div>
+      <div>
+        <h1
+          className={`text-2xl font-black tracking-tight leading-none ${
+            isDark ? "text-slate-100" : "text-slate-800"
+          }`}
+        >
+          TimeBox
+        </h1>
+        <p
+          className={`text-xs font-bold tracking-wider uppercase ${
+            isDark ? "text-slate-500" : "text-slate-400"
+          }`}
+        >
+          Deep Work OS
+        </p>
+      </div>
+    </div>
+    <div className="flex gap-3">
+      <button
+        onClick={toggleTheme}
+        className={`p-3 rounded-2xl transition-all ${
+          isDark
+            ? "text-slate-400 hover:text-white hover:bg-slate-800"
+            : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+        }`}
+        aria-label="Toggle Theme"
+      >
+        {isDark ? <Sun size={22} /> : <Moon size={22} />}
+      </button>
+      <button
+        onClick={toggleReview}
+        className={`p-3 rounded-2xl transition-all ${
+          isDark
+            ? "text-slate-400 hover:text-white hover:bg-slate-800"
+            : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+        }`}
+        aria-label="Toggle Daily Review"
+      >
+        {isReviewOpen ? <X size={22} /> : <BarChart size={22} />}
+      </button>
+    </div>
+  </div>
+);
+
+// 2. FullScreenFocus (Updated: Handles Running AND Paused states)
+const FullScreenFocus = ({
+  remainingSeconds,
+  activeTaskTitle,
+  onPause,
+  onResume,
+  onAbandon,
+  isDark,
+  focusState,
+}: {
+  remainingSeconds: number;
+  activeTaskTitle?: string;
+  onPause: () => void;
+  onResume: () => void;
+  onAbandon: () => void;
+  isDark: boolean;
+  focusState: FocusState;
+}) => {
+  const mins = Math.floor(remainingSeconds / 60);
+  const secs = remainingSeconds % 60;
+  const isPaused = focusState === FOCUS_STATES.PAUSED;
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-colors duration-500 ${
+        isDark ? "bg-slate-950 text-white" : "bg-indigo-50 text-slate-800"
+      }`}
+    >
+      {/* Decorative Background Elements - Pulse pauses when timer pauses */}
+      <div
+        className={`absolute w-[40vw] h-[40vw] rounded-full blur-3xl opacity-20 ${
+          isPaused ? "" : "animate-pulse"
+        } ${isDark ? "bg-indigo-600" : "bg-pink-300"}`}
+        style={{ top: "10%", left: "10%", animationDuration: "4s" }}
+      ></div>
+      <div
+        className={`absolute w-[35vw] h-[35vw] rounded-full blur-3xl opacity-20 ${
+          isPaused ? "" : "animate-pulse"
+        } ${isDark ? "bg-purple-600" : "bg-indigo-300"}`}
+        style={{ bottom: "10%", right: "10%", animationDuration: "6s" }}
+      ></div>
+
+      <div className="relative z-10 flex flex-col items-center text-center p-8 max-w-4xl w-full">
+        {/* Cute Icon / Badge */}
+        <div
+          className={`mb-8 px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 ${
+            isPaused ? "" : "animate-bounce"
+          } ${
+            isDark ? "bg-white/10 text-indigo-200" : "bg-white text-indigo-500"
+          }`}
+          style={{ animationDuration: "2s" }}
+        >
+          {isPaused ? (
+            <Coffee size={16} fill="currentColor" />
+          ) : (
+            <Sparkles size={16} fill="currentColor" />
+          )}
+          {isPaused ? "Paused" : "Focusing Mode"}
+        </div>
+
+        {/* Task Title */}
+        <h2
+          className={`text-3xl md:text-5xl font-bold mb-10 max-w-3xl leading-tight ${
+            isDark ? "text-slate-200" : "text-slate-700"
+          }`}
+        >
+          {activeTaskTitle || "Deep Work Session"}
+        </h2>
+
+        {/* Giant Cute Timer */}
+        <div
+          className={`font-mono font-black text-[18vw] md:text-[12rem] leading-none mb-12 tracking-tighter drop-shadow-lg tabular-nums ${
+            isDark ? "text-white" : "text-indigo-600"
+          } ${isPaused ? "opacity-50" : ""}`}
+        >
+          {mins}:{secs < 10 ? `0${secs}` : secs}
+        </div>
+
+        {/* Controls Switcher */}
+        {isPaused ? (
+          <div className="flex flex-col md:flex-row gap-4 animate-slide-up">
+            <button
+              onClick={onResume}
+              className={`
+                group px-10 py-5 rounded-3xl font-bold text-xl transition-all transform hover:scale-105 shadow-xl flex items-center gap-3
+                ${
+                  isDark
+                    ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                    : "bg-emerald-400 text-white hover:bg-emerald-500"
+                }
+              `}
+            >
+              <Play size={24} fill="currentColor" />
+              <span>Resume Focus</span>
+            </button>
+            <button
+              onClick={onAbandon}
+              className={`
+                px-8 py-5 rounded-3xl font-bold text-lg transition-all hover:bg-white/10 hover:text-rose-400
+                ${isDark ? "text-slate-400" : "text-slate-500"}
+              `}
+            >
+              Abandon Session
+            </button>
+          </div>
+        ) : (
+          <div className="animate-fade-in">
+            <p
+              className={`text-xl md:text-2xl font-medium mb-12 opacity-80 flex items-center justify-center gap-2 ${
+                isDark ? "text-indigo-200" : "text-slate-500"
+              }`}
+            >
+              You're doing great! Keep going{" "}
+              <Heart size={20} fill="currentColor" className="text-rose-400" />
+            </p>
+            <button
+              onClick={onPause}
+              className={`
+                group relative px-10 py-5 rounded-3xl font-bold text-xl transition-all transform hover:scale-105 hover:-translate-y-1 shadow-xl
+                ${
+                  isDark
+                    ? "bg-slate-800 text-white hover:bg-slate-700"
+                    : "bg-white text-indigo-600 hover:bg-indigo-50"
+                }
+              `}
+            >
+              <div className="flex items-center gap-3">
+                <Pause size={24} fill="currentColor" />
+                <span>Take a Break</span>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 3. PausedBanner (Kept for fallback, though full screen now handles pause)
+const PausedBanner = ({
+  remainingSeconds,
+  onResume,
+  onAbandon,
+  isDark,
+}: {
+  remainingSeconds: number;
+  onResume: () => void;
+  onAbandon: () => void;
+  isDark: boolean;
+}) => {
+  const mins = Math.floor(remainingSeconds / 60);
+  const secs = remainingSeconds % 60;
+
+  return (
+    <div
+      className={`
+      border p-6 rounded-3xl mb-6 animate-fade-in relative overflow-hidden shadow-sm
+      ${
+        isDark
+          ? "bg-amber-900/10 border-amber-500/20"
+          : "bg-amber-50 border-amber-100"
+      }
+    `}
+    >
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400"></div>
+      <div className="flex justify-between items-center relative z-10 flex-wrap gap-4">
+        <div>
+          <h3
+            className={`font-bold text-lg flex items-center gap-2 ${
+              isDark ? "text-amber-400" : "text-amber-700"
+            }`}
+          >
+            <Coffee size={20} />
+            {MICROCOPY.paused.banner}
+          </h3>
+          <p
+            className={`text-sm font-medium mt-1 opacity-80 ${
+              isDark ? "text-amber-200" : "text-amber-800"
+            }`}
+          >
+            Time left: {mins}:{secs < 10 ? `0${secs}` : secs}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onAbandon}
+            className={`text-sm px-4 py-2 font-bold rounded-xl transition-colors ${
+              isDark
+                ? "text-slate-500 hover:text-rose-400 hover:bg-rose-950/20"
+                : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+            }`}
+          >
+            {MICROCOPY.paused.abandonBtn}
+          </button>
+          <button
+            onClick={onResume}
+            className={`
+            px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center gap-2 hover:scale-105 hover:shadow-lg
+            ${
+              isDark
+                ? "bg-amber-500 hover:bg-amber-400 text-slate-900"
+                : "bg-amber-400 hover:bg-amber-500 text-white"
+            }
+          `}
+          >
+            <Play size={16} fill="currentColor" /> {MICROCOPY.paused.resumeBtn}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 4. TimeBoxSelector
+const TimeBoxSelector = ({
+  selected,
+  onSelect,
+  disabled,
+  isDark,
+}: {
+  selected: number;
+  onSelect: (minutes: number) => void;
+  disabled: boolean;
+  isDark: boolean;
+}) => {
+  const options = [15, 30, 45, 60];
+  return (
+    <div
+      className={`grid grid-cols-4 gap-3 mb-8 ${
+        disabled ? "opacity-30 pointer-events-none" : ""
+      }`}
+    >
+      {options.map((min) => (
+        <button
+          key={min}
+          onClick={() => onSelect(min)}
+          className={`
+            py-5 rounded-2xl text-sm font-bold transition-all relative overflow-hidden group
+            ${
+              selected === min
+                ? isDark
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 ring-2 ring-indigo-400/20 scale-105"
+                  : "bg-indigo-500 text-white shadow-lg shadow-indigo-200 ring-2 ring-indigo-100 scale-105"
+                : isDark
+                ? "bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent"
+                : "bg-white text-slate-400 hover:bg-slate-50 hover:text-indigo-600 border border-slate-100 hover:border-indigo-100"
+            }
+          `}
+        >
+          <span className="relative z-10 text-lg">
+            {min}
+            <span className="text-xs font-bold opacity-60 ml-0.5">m</span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// 5. CompletionCard
+const CompletionCard = ({
+  onReset,
+  isDark,
+}: {
+  onReset: () => void;
+  isDark: boolean;
+}) => (
+  <div className="text-center py-12 animate-scale-up flex flex-col justify-center h-full">
+    <div>
+      <div
+        className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 ring-8 transition-all animate-bounce ${
+          isDark
+            ? "bg-emerald-500/20 text-emerald-400 ring-emerald-500/5"
+            : "bg-emerald-100 text-emerald-500 ring-emerald-50"
+        }`}
+        style={{ animationDuration: "3s" }}
+      >
+        <Check size={48} strokeWidth={3} />
+      </div>
+      <h2
+        className={`text-4xl font-black mb-4 ${
+          isDark ? "text-white" : "text-slate-800"
+        }`}
+      >
+        {MICROCOPY.completed.title}
+      </h2>
+      <p
+        className={`mb-12 max-w-[240px] mx-auto leading-relaxed text-lg font-medium ${
+          isDark ? "text-slate-400" : "text-slate-500"
+        }`}
+      >
+        {MICROCOPY.completed.subtext}
+      </p>
+    </div>
+    <button
+      onClick={onReset}
+      className={`w-full max-w-sm mx-auto py-5 rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-xl ${
+        isDark
+          ? "bg-slate-100 text-slate-900 hover:bg-white"
+          : "bg-slate-800 text-white hover:bg-slate-700"
+      }`}
+    >
+      {MICROCOPY.completed.nextAction}
+    </button>
+  </div>
+);
+
+// 6. CurrentFocusCard
+const CurrentFocusCard = ({
+  focusState,
+  activeTaskTitle,
+  remainingSeconds,
+  selectedDuration,
+  actions,
+  canStart,
+  isDark,
+}: {
+  focusState: FocusState;
+  activeTaskTitle?: string;
+  remainingSeconds: number;
+  selectedDuration: number;
+  actions: {
+    start: (taskId: string | null, duration: number) => void;
+    pause: () => void;
+    resume: () => void;
+    abandon: () => void;
+    reset: () => void;
+    setDuration: (mins: number) => void;
+  };
+  canStart: boolean;
+  isDark: boolean;
+}) => {
+  const isPaused = focusState === FOCUS_STATES.PAUSED;
+  const isCompleted = focusState === FOCUS_STATES.COMPLETED;
+  const isIdle = focusState === FOCUS_STATES.IDLE;
+
+  const cardBg = isDark
+    ? "bg-slate-900 border-slate-800"
+    : "bg-white border-slate-100";
+  const textColor = isDark ? "text-white" : "text-slate-800";
+
+  return (
+    <div
+      className={`${cardBg} rounded-[2.5rem] p-8 md:p-12 mb-6 md:mb-0 relative overflow-hidden border shadow-xl transition-colors duration-300 h-full flex flex-col min-h-[500px]`}
+    >
+      {/* State: PAUSED (Fallback View - Full screen handles this now but keeping robust) */}
+      {isPaused && (
+        <div className="opacity-40 grayscale pointer-events-none blur-sm select-none flex flex-col h-full justify-center">
+          <h2 className={`text-3xl font-black text-center mb-4 ${textColor}`}>
+            {activeTaskTitle || "Deep Work"}
+          </h2>
+          <div
+            className={`text-center font-mono text-6xl font-bold ${textColor}`}
+          >
+            Paused
+          </div>
+          <div className="text-center mt-4 font-bold uppercase tracking-widest text-slate-400">
+            Session Paused
+          </div>
+        </div>
+      )}
+
+      {/* State: COMPLETED */}
+      {isCompleted && (
+        <CompletionCard onReset={actions.reset} isDark={isDark} />
+      )}
+
+      {/* State: IDLE */}
+      {isIdle && (
+        <div className="animate-fade-in flex flex-col h-full justify-center">
+          <div className="flex-1 flex flex-col justify-center">
+            <h2
+              className={`text-3xl md:text-4xl font-black mb-12 text-center leading-tight ${textColor}`}
+            >
+              {activeTaskTitle ? (
+                <>
+                  Focus on{" "}
+                  <span
+                    className={isDark ? "text-indigo-400" : "text-indigo-500"}
+                  >
+                    {activeTaskTitle}
+                  </span>
+                </>
+              ) : (
+                "Ready to focus?"
+              )}
+            </h2>
+
+            <TimeBoxSelector
+              selected={selectedDuration}
+              onSelect={actions.setDuration}
+              disabled={false}
+              isDark={isDark}
+            />
+          </div>
+
+          <div className="shrink-0">
+            <button
+              onClick={() => actions.start(null, selectedDuration)}
+              disabled={!canStart}
+              className={`
+                 w-full py-6 md:py-8 rounded-3xl font-bold text-2xl transition-all flex justify-center items-center gap-3 relative overflow-hidden group shadow-lg
+                 ${
+                   canStart
+                     ? isDark
+                       ? "bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/20 hover:scale-[1.01]"
+                       : "bg-indigo-500 text-white hover:bg-indigo-600 hover:shadow-indigo-200 hover:scale-[1.01]"
+                     : isDark
+                     ? "bg-slate-800 text-slate-600 cursor-not-allowed"
+                     : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                 }
+               `}
+            >
+              <Play
+                size={28}
+                fill="currentColor"
+                className={
+                  canStart
+                    ? "group-hover:translate-x-1 transition-transform"
+                    : ""
+                }
+              />
+              {MICROCOPY.idle.cta}
+            </button>
+
+            {!canStart && (
+              <p
+                className={`text-center text-xs mt-6 font-bold tracking-wide opacity-50 ${
+                  isDark ? "text-slate-500" : "text-slate-400"
+                }`}
+              >
+                SELECT A TASK & TIME TO BEGIN
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 7. QuickAddTask
+const QuickAddTask = ({
+  onAdd,
+  disabled,
+  isDark,
+}: {
+  onAdd: (title: string, priority: "urgent" | "medium" | "low") => void;
+  disabled: boolean;
+  isDark: boolean;
+}) => {
+  const [val, setVal] = useState("");
+  const [priority, setPriority] = useState<"urgent" | "medium" | "low">("low");
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (val.trim()) {
+      onAdd(val, priority);
+      setVal("");
+      setPriority("low");
+    }
+  };
+
+  const priorities: Array<{
+    id: "urgent" | "medium" | "low";
+    color: string;
+    label: string;
+  }> = [
+    { id: "urgent", color: "bg-rose-500", label: "Urgent" },
+    { id: "medium", color: "bg-amber-400", label: "Medium" },
+    { id: "low", color: "bg-sky-400", label: "Low" },
+  ];
+
+  if (disabled) return null;
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-6">
+      <div
+        className={`
+        relative rounded-3xl transition-all duration-300 border flex flex-col
+        ${
+          isFocused
+            ? isDark
+              ? "ring-2 ring-indigo-500/50 bg-slate-800 border-transparent shadow-lg shadow-indigo-900/20"
+              : "ring-2 ring-indigo-100 bg-white border-transparent shadow-xl shadow-indigo-50"
+            : isDark
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-100"
+        }
+      `}
+      >
+        {/* Input Area */}
+        <div className="relative">
+          <input
+            type="text"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder={MICROCOPY.idle.taskInputPlaceholder}
+            className={`
+              w-full bg-transparent border-none rounded-t-3xl px-6 pt-6 pb-2 pl-14 focus:outline-none font-bold text-lg
+              ${
+                isDark
+                  ? "text-slate-100 placeholder:text-slate-600"
+                  : "text-slate-700 placeholder:text-slate-300"
+              }
+            `}
+          />
+          <Plus
+            className={`absolute left-5 top-6 transition-colors ${
+              isFocused
+                ? "text-indigo-500"
+                : isDark
+                ? "text-slate-600"
+                : "text-slate-300"
+            }`}
+            size={24}
+            strokeWidth={2.5}
+          />
+        </div>
+
+        {/* Priority Selection Bar */}
+        <div
+          className={`px-6 pb-4 pt-2 flex items-center justify-between transition-opacity duration-200 ${
+            isFocused || val ? "opacity-100" : "opacity-40 hover:opacity-100"
+          }`}
+        >
+          <div className="flex gap-3">
+            {priorities.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPriority(p.id)}
+                className={`
+                   w-6 h-6 rounded-full flex items-center justify-center transition-all
+                   ${p.color} 
+                   ${
+                     priority === p.id
+                       ? "ring-2 ring-offset-2 ring-offset-transparent scale-125 " +
+                         (isDark ? "ring-white" : "ring-slate-500")
+                       : "opacity-40 hover:opacity-100 hover:scale-110"
+                   }
+                 `}
+                title={p.label}
+                aria-label={`Select ${p.label} priority`}
+              >
+                {priority === p.id && (
+                  <div className="w-2 h-2 bg-white rounded-full shadow-sm" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!val}
+            className={`p-2 rounded-xl transition-all ${
+              val
+                ? isDark
+                  ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                  : "bg-slate-800 text-white hover:bg-slate-700"
+                : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <ChevronUp size={20} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+// 8. TaskPool
+const TaskPool = ({
+  tasks,
+  onSelectActive,
+  activeTaskId,
+  isLocked,
+  isExpanded,
+  toggleExpand,
+  isDark,
+}: {
+  tasks: Task[];
+  onSelectActive: (taskId: string) => void;
+  activeTaskId: string | null;
+  isLocked: boolean;
+  isExpanded: boolean;
+  toggleExpand: () => void;
+  isDark: boolean;
+}) => {
+  const containerClass = isLocked
+    ? "opacity-40 pointer-events-none select-none grayscale"
+    : "opacity-100";
+
+  return (
+    <div
+      className={`transition-all duration-500 ease-in-out ${containerClass}`}
+    >
+      <div
+        onClick={!isLocked ? toggleExpand : undefined}
+        className="flex justify-between items-center cursor-pointer py-3 px-4 mb-2 select-none group"
+      >
+        <h3
+          className={`text-xs font-black uppercase tracking-widest transition-colors ${
+            isDark
+              ? "text-slate-500 group-hover:text-slate-300"
+              : "text-slate-400 group-hover:text-slate-600"
+          }`}
+        >
+          Task Pool ({tasks.length})
+        </h3>
+        {!isLocked && (
+          <div
+            className={`p-2 rounded-xl transition-colors ${
+              isDark
+                ? "bg-slate-900 text-slate-500 group-hover:bg-slate-800 group-hover:text-slate-300"
+                : "bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600"
+            }`}
+          >
+            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </div>
+        )}
+      </div>
+
+      {isExpanded && (
+        <div className="space-y-3">
+          {tasks.length === 0 && (
+            <div
+              className={`text-sm py-12 italic text-center border border-dashed rounded-3xl font-medium ${
+                isDark
+                  ? "text-slate-600 border-slate-800"
+                  : "text-slate-400 border-slate-200"
+              }`}
+            >
+              No tasks yet. Clear mind?
+            </div>
+          )}
+          {tasks.map((task) => {
+            const styles = getPriorityColor(task.priority, isDark);
+            return (
+              <div
+                key={task.id}
+                onClick={() => !isLocked && onSelectActive(task.id)}
+                className={`
+                  group flex items-center justify-between p-5 rounded-3xl border transition-all cursor-pointer relative overflow-hidden
+                  ${
+                    activeTaskId === task.id
+                      ? isDark
+                        ? "bg-indigo-900/20 border-indigo-500/50 shadow-md"
+                        : "bg-indigo-50 border-indigo-100 shadow-sm"
+                      : isDark
+                      ? "bg-slate-900 border-slate-800 hover:border-slate-700 hover:bg-slate-800"
+                      : "bg-white border-slate-100 hover:border-indigo-100 hover:bg-white hover:shadow-md"
+                  }
+                `}
+              >
+                {/* Selection Indicator Bar */}
+                {activeTaskId === task.id && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-500"></div>
+                )}
+
+                <div className="flex items-center gap-4 pl-2">
+                  <div
+                    className={`w-3.5 h-3.5 rounded-full ${styles.dot} ${styles.shadow} border-2 border-white/20`}
+                  />
+                  <span
+                    className={`text-base font-bold transition-colors ${
+                      activeTaskId === task.id
+                        ? isDark
+                          ? "text-indigo-200"
+                          : "text-indigo-900"
+                        : isDark
+                        ? "text-slate-300 group-hover:text-slate-100"
+                        : "text-slate-600 group-hover:text-slate-800"
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+                </div>
+                <button
+                  className={`
+                  p-2.5 rounded-full transition-all duration-300 transform
+                  ${
+                    activeTaskId === task.id
+                      ? isDark
+                        ? "text-indigo-400 bg-indigo-950/50 scale-100 opacity-100"
+                        : "text-indigo-500 bg-indigo-50 scale-100 opacity-100"
+                      : (isDark
+                          ? "text-slate-500 bg-slate-800"
+                          : "text-slate-300 bg-slate-50") +
+                        " scale-75 opacity-0 group-hover:opacity-100 group-hover:scale-100 hover:text-white"
+                  }
+                `}
+                >
+                  <Play size={18} fill="currentColor" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 9. DailyReview Page
+const DailyReview = ({
+  history,
+  onClose,
+  isDark,
+}: {
+  history: SessionHistory[];
+  onClose: () => void;
+  isDark: boolean;
+}) => {
+  const todayStr = new Date().toDateString();
+  const todaysSessions = history.filter(
+    (h) => new Date(h.date).toDateString() === todayStr
+  );
+  const completedCount = todaysSessions.filter(
+    (h) => h.outcome === "completed"
+  ).length;
+  const totalMinutes = todaysSessions.reduce(
+    (acc, curr) => acc + (curr.outcome === "completed" ? curr.duration : 0),
+    0
+  );
+
+  const bgPage = isDark ? "bg-slate-950" : "bg-white";
+  const textTitle = isDark ? "text-white" : "text-slate-800";
+  const textSub = isDark ? "text-slate-500" : "text-slate-400";
+  const cardBg = isDark
+    ? "bg-slate-900 border-slate-800"
+    : "bg-slate-50 border-slate-100";
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 p-6 animate-slide-up overflow-y-auto ${bgPage}`}
+    >
+      <div className="max-w-2xl mx-auto mt-10">
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h2
+              className={`text-4xl font-black mb-2 tracking-tight ${textTitle}`}
+            >
+              Daily Review
+            </h2>
+            <p className={`text-xl font-medium ${textSub}`}>
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className={`p-3 rounded-full transition-colors ${
+              isDark
+                ? "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 mb-10">
+          <div
+            className={`${cardBg} p-8 rounded-[2.5rem] border relative overflow-hidden group`}
+          >
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Check
+                size={64}
+                className={isDark ? "text-white" : "text-slate-800"}
+              />
+            </div>
+            <div className={`text-6xl font-black mb-3 ${textTitle}`}>
+              {completedCount}
+            </div>
+            <div
+              className={`text-sm font-bold uppercase tracking-widest ${textSub}`}
+            >
+              {MICROCOPY.review.statLabel}
+            </div>
+          </div>
+          <div
+            className={`${cardBg} p-8 rounded-[2.5rem] border relative overflow-hidden group`}
+          >
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+              <History
+                size={64}
+                className={isDark ? "text-white" : "text-slate-800"}
+              />
+            </div>
+            <div className={`text-6xl font-black mb-3 ${textTitle}`}>
+              {totalMinutes}
+            </div>
+            <div
+              className={`text-sm font-bold uppercase tracking-widest ${textSub}`}
+            >
+              {MICROCOPY.review.timeLabel}
+            </div>
+          </div>
+        </div>
+
+        {completedCount === 0 ? (
+          <div
+            className={`text-center p-16 border-2 border-dashed rounded-[2.5rem] ${
+              isDark
+                ? "border-slate-800 bg-slate-900/50"
+                : "border-slate-200 bg-slate-50"
+            }`}
+          >
+            <p
+              className={`mb-2 text-lg font-bold ${
+                isDark ? "text-slate-400" : "text-slate-500"
+              }`}
+            >
+              {MICROCOPY.review.empty}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <h3
+              className={`text-sm font-black uppercase tracking-widest mb-6 pl-2 ${textSub}`}
+            >
+              Session Log
+            </h3>
+            {todaysSessions.map((session) => (
+              <div
+                key={session.id}
+                className={`flex justify-between items-center p-6 rounded-3xl border transition-colors ${
+                  isDark
+                    ? "bg-slate-900 border-slate-800/50 hover:border-slate-700"
+                    : "bg-white border-slate-100 hover:border-slate-200 shadow-sm"
+                }`}
+              >
+                <div className="flex items-center gap-5">
+                  <div
+                    className={`w-4 h-4 rounded-full shadow-sm ${
+                      session.outcome === "completed"
+                        ? "bg-emerald-500"
+                        : "bg-rose-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-base font-bold ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
+                    {new Date(session.date).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <span className={`text-base font-black ${textTitle}`}>
+                  {session.duration} min
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ===========================================================================
+   F) MAIN APP COMPONENT
+===========================================================================
+*/
+
+export default function TimeBoxApp() {
+  const {
+    focusState,
+    remainingSeconds,
+    activeTaskId,
+    selectedDuration,
+    history,
+    actions,
+  } = useFocusSession();
+  const { tasks, addTask } = useTaskPool();
+  const [activeTaskSelection, setActiveTaskSelection] = useState<string | null>(
+    null
+  );
+  const [isPoolExpanded, setIsPoolExpanded] = useState(true);
+  const [showReview, setShowReview] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (activeTaskId) {
+      setActiveTaskSelection(activeTaskId);
+      setIsPoolExpanded(false);
+    } else if (focusState === FOCUS_STATES.IDLE) {
+      setIsPoolExpanded(true);
+    }
+  }, [activeTaskId, focusState]);
+
+  const isRunning = focusState === FOCUS_STATES.RUNNING;
+  const isPaused = focusState === FOCUS_STATES.PAUSED;
+  const isLocked =
+    isRunning || isPaused || focusState === FOCUS_STATES.COMPLETED;
+
+  const activeTask = tasks.find((t) => t.id === activeTaskSelection);
+  const canStart = activeTaskSelection !== null && selectedDuration > 0;
+
+  const handleStart = (taskId: string | null, duration: number) => {
+    const finalTaskId = taskId || activeTaskSelection;
+    if (finalTaskId) {
+      actions.start(finalTaskId, duration);
+    }
+  };
+
+  // --- RENDER FULL SCREEN FOCUS MODE IF RUNNING OR PAUSED ---
+  // Updated: Now includes isPaused so the full screen mode persists during pause
+  if (isRunning || isPaused) {
+    return (
+      <FullScreenFocus
+        remainingSeconds={remainingSeconds}
+        activeTaskTitle={activeTask?.title}
+        onPause={actions.pause}
+        onResume={actions.resume}
+        onAbandon={actions.abandon}
+        isDark={isDarkMode}
+        focusState={focusState}
+      />
+    );
+  }
+
+  // --- STANDARD DASHBOARD LAYOUT ---
+  return (
+    <div
+      className={`h-screen overflow-hidden font-sans transition-colors duration-300 ${
+        isDarkMode
+          ? "bg-slate-950 text-slate-200 selection:bg-indigo-500/30 selection:text-indigo-200"
+          : "bg-slate-50 text-slate-900 selection:bg-indigo-200 selection:text-indigo-900"
+      }`}
+    >
+      {/* --- Layout Container --- */}
+      <div className="max-w-[1600px] mx-auto px-6 h-full relative flex flex-col">
+        <HeaderBar
+          toggleReview={() => setShowReview(true)}
+          isReviewOpen={showReview}
+          isDark={isDarkMode}
+          toggleTheme={() => setIsDarkMode(!isDarkMode)}
+        />
+
+        {/* --- Main Content Grid --- */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 pb-6 min-h-0">
+          {/* Left Column (Desktop): Task Management */}
+          <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-6 order-2 md:order-1 overflow-y-auto md:overflow-visible pr-2 md:pr-0">
+            <div className="md:h-full md:flex md:flex-col">
+              {!isLocked && (
+                <QuickAddTask
+                  onAdd={addTask}
+                  disabled={isLocked}
+                  isDark={isDarkMode}
+                />
+              )}
+              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <TaskPool
+                  tasks={tasks}
+                  activeTaskId={activeTaskSelection}
+                  onSelectActive={setActiveTaskSelection}
+                  isLocked={isLocked}
+                  isExpanded={isPoolExpanded}
+                  toggleExpand={() => setIsPoolExpanded(!isPoolExpanded)}
+                  isDark={isDarkMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Desktop): Focus Zone */}
+          <div className="md:col-span-7 lg:col-span-8 flex flex-col order-1 md:order-2 h-full">
+            {/* PausedBanner is hidden here because we use FullScreenFocus now, but keeping in logic for fallback */}
+            {isPaused && (
+              <PausedBanner
+                remainingSeconds={remainingSeconds}
+                onResume={actions.resume}
+                onAbandon={actions.abandon}
+                isDark={isDarkMode}
+              />
+            )}
+            <CurrentFocusCard
+              focusState={focusState}
+              activeTaskTitle={activeTask?.title}
+              remainingSeconds={remainingSeconds}
+              selectedDuration={selectedDuration}
+              actions={{ ...actions, start: handleStart }}
+              canStart={canStart}
+              isDark={isDarkMode}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* --- Overlay Page: Review --- */}
+      {showReview && (
+        <DailyReview
+          history={history}
+          onClose={() => setShowReview(false)}
+          isDark={isDarkMode}
+        />
+      )}
+    </div>
+  );
+}
