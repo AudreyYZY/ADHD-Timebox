@@ -46,13 +46,6 @@ export default function TimeBoxApp() {
   // 跟踪上一个 focusState 用于检测状态变化
   const prevFocusState = useRef(focusState);
   const isInitialized = useRef(false);
-  const lastActiveTaskIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (activeTaskId) {
-      lastActiveTaskIdRef.current = activeTaskId;
-    }
-  }, [activeTaskId]);
 
   // APP_START: 应用启动时初始化 Orchestrator
   useEffect(() => {
@@ -74,46 +67,37 @@ export default function TimeBoxApp() {
     const prevState = prevFocusState.current;
     prevFocusState.current = focusState;
 
-    const startedFromRest =
-      (prevState === FOCUS_STATES.IDLE || prevState === FOCUS_STATES.ABANDONED) &&
-      focusState === FOCUS_STATES.RUNNING;
-
-    // TIMEBOX_STARTED: 从静止态（含 Abandoned）进入 RUNNING
-    if (startedFromRest && activeTaskId) {
-      orchestratorEvents.timeBoxStarted(activeTaskId, selectedDuration);
+    // TIMEBOX_STARTED: 从 IDLE 变为 RUNNING
+    if (prevState === FOCUS_STATES.IDLE && focusState === FOCUS_STATES.RUNNING) {
+      if (activeTaskId) {
+        orchestratorEvents.timeBoxStarted(activeTaskId, selectedDuration);
+      }
     }
 
-    const eventTaskId = activeTaskId || lastActiveTaskIdRef.current;
-
     // TIMEBOX_ENDED: 变为 COMPLETED
-    if (
-      focusState === FOCUS_STATES.COMPLETED &&
-      prevState !== FOCUS_STATES.COMPLETED &&
-      eventTaskId
-    ) {
-      orchestratorEvents.timeBoxEnded(
-        eventTaskId,
-        selectedDuration,
-        selectedDuration // 完成时 actualMinutes = durationMinutes
-      );
+    if (focusState === FOCUS_STATES.COMPLETED && prevState !== FOCUS_STATES.COMPLETED) {
+      if (activeTaskId) {
+        orchestratorEvents.timeBoxEnded(
+          activeTaskId,
+          selectedDuration,
+          selectedDuration // 完成时 actualMinutes = durationMinutes
+        );
+      }
     }
 
     // TIMEBOX_INTERRUPTED: 变为 ABANDONED
-    if (
-      focusState === FOCUS_STATES.ABANDONED &&
-      prevState !== FOCUS_STATES.ABANDONED &&
-      eventTaskId
-    ) {
-      const elapsedMinutes = Math.max(
-        0,
-        Math.round((selectedDuration * 60 - remainingSeconds) / 60)
-      );
-      orchestratorEvents.timeBoxInterrupted(
-        eventTaskId,
-        selectedDuration,
-        elapsedMinutes,
-        "User abandoned"
-      );
+    if (focusState === FOCUS_STATES.ABANDONED && prevState !== FOCUS_STATES.ABANDONED) {
+      if (activeTaskId) {
+        const elapsedMinutes = Math.round(
+          (selectedDuration * 60 - remainingSeconds) / 60
+        );
+        orchestratorEvents.timeBoxInterrupted(
+          activeTaskId,
+          selectedDuration,
+          elapsedMinutes,
+          "User abandoned"
+        );
+      }
     }
   }, [
     focusState,
@@ -125,9 +109,7 @@ export default function TimeBoxApp() {
 
   // 当收到推荐时，自动选择推荐的任务
   useEffect(() => {
-    const idleLike =
-      focusState === FOCUS_STATES.IDLE || focusState === FOCUS_STATES.ABANDONED;
-    if (recommendation && idleLike) {
+    if (recommendation && focusState === FOCUS_STATES.IDLE) {
       setActiveTaskSelection(recommendation.taskId);
       // 可选：自动设置推荐的时长
       if (recommendation.durationMinutes !== selectedDuration) {
@@ -140,10 +122,7 @@ export default function TimeBoxApp() {
     if (activeTaskId) {
       setActiveTaskSelection(activeTaskId);
       setIsPoolExpanded(false);
-    } else if (
-      focusState === FOCUS_STATES.IDLE ||
-      focusState === FOCUS_STATES.ABANDONED
-    ) {
+    } else if (focusState === FOCUS_STATES.IDLE) {
       setIsPoolExpanded(true);
     }
   }, [activeTaskId, focusState]);

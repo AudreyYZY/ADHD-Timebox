@@ -114,7 +114,7 @@ export const FullScreenFocus = ({
                 isDark ? "text-indigo-200" : "text-slate-500"
               }`}
             >
-              You&apos;re doing great! Keep going{" "}
+              You're doing great! Keep going{" "}
               <Heart size={20} fill="currentColor" className="text-rose-400" />
             </p>
             <button

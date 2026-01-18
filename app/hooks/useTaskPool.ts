@@ -15,7 +15,8 @@ export const useTaskPool = () => {
             title: t.title,
             priority: (t.priority as "urgent" | "medium" | "low") || "medium",
             estimatedMinutes: t.estimatedMinutes,
-            cognitiveLoad: (t.cognitiveLoad as "low" | "medium" | "high") || "medium"
+            cognitiveLoad: (t.cognitiveLoad as "low" | "medium" | "high") || "medium",
+            status: t.status
         }));
         setTasks(mappedTasks);
       } catch (e) {
@@ -35,7 +36,7 @@ export const useTaskPool = () => {
     priority: "urgent" | "medium" | "low" = "low"
   ) => {
     const newTask: Task = { id: Date.now().toString(), title, priority };
-    setTasks((prev) => [...prev, newTask]);
+    setTasks([...tasks, newTask]);
     // Note: We are not syncing writes to backend yet as PlanManager is complex
   };
 

@@ -15,6 +15,7 @@ export interface Task {
   priority: "urgent" | "medium" | "low";
   estimatedMinutes?: number;
   cognitiveLoad?: "low" | "medium" | "high";
+  status?: string;
 }
 
 export interface SessionHistory {

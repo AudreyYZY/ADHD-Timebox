@@ -32,8 +32,7 @@ export const CurrentFocusCard = ({
 }: CurrentFocusCardProps) => {
   const isPaused = focusState === FOCUS_STATES.PAUSED;
   const isCompleted = focusState === FOCUS_STATES.COMPLETED;
-  const isIdle =
-    focusState === FOCUS_STATES.IDLE || focusState === FOCUS_STATES.ABANDONED;
+  const isIdle = focusState === FOCUS_STATES.IDLE;
 
   const cardBg = isDark
     ? "bg-slate-900 border-slate-800"

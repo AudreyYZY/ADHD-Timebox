@@ -18,7 +18,7 @@ export interface RecommendationResponse {
   taskId: string;
   durationMinutes: number;
   reason: string;
-  preferLowCognitiveLoad: boolean;
+  preferLowCognitiveLoad: bool;
 }
 
 export const api = {
@@ -52,5 +52,16 @@ export const api = {
       throw new Error("Failed to get recommendation");
     }
     return res.json();
+  },
+
+  updateTaskStatus: async (taskId: string, status: string): Promise<void> => {
+    const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update task status");
+    }
   },
 };

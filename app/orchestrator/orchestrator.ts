@@ -26,6 +26,7 @@ import {
   Task,
 } from "../types";
 import { IDecisionAgent, decisionAgent } from "../agents/decisionAgent";
+import { api } from "../utils/api";
 
 // 初始状态
 export const initialOrchestratorState: OrchestratorState = {
@@ -68,7 +69,8 @@ export class Orchestrator {
 
       default:
         // TypeScript 会确保这不会发生
-        return { newState: event.state };
+        const _exhaustiveCheck: never = event;
+        throw new Error(`未处理的事件类型: ${(_exhaustiveCheck as any).event}`);
     }
   }
 
@@ -144,6 +146,10 @@ export class Orchestrator {
   ): Promise<OrchestratorOutput> {
     const { payload, state } = event;
 
+    const updatedTasks = state.tasks.map((task) =>
+      task.id === payload.taskId ? { ...task, status: "completed" } : task
+    );
+
     // 创建结果记录
     const outcome: TimeBoxOutcome = {
       timeBoxId: state.activeTimeBox?.id || this.generateId(),
@@ -158,8 +164,15 @@ export class Orchestrator {
       ...state,
       activeTimeBox: null, // 清除活跃时间盒
       outcomes: [outcome, ...state.outcomes], // 保存结果
+      tasks: updatedTasks,
       isLoadingRecommendation: true,
     };
+
+    try {
+      await api.updateTaskStatus(payload.taskId, "completed");
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
 
     // 调用 Decision Agent 获取新推荐
     if (newState.tasks.length > 0) {

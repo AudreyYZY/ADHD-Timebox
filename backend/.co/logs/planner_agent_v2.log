@@ -194,3 +194,15 @@ ni. what is your model?
 [21:33:04] [co] ═══════════════════════════════════════════════
 [21:33:04] [co] [OK] complete · 8.7k tokens · $0.021 · 18.8s
 [21:33:04] [co]   .co/evals/user_input_user_input_system_state_2026_01_18_21.yaml
+[21:37:05] [co] > "<User_Input>
+你可以做什么
+</User_Input>
+
+<System_State>
+当前时间：2026-01-18 21:37 CST (UTC+0800)
+计划读取失败：未找到计划文..."
+[21:37:05] [co] ○ gemini-2.5-pro                                  1/20
+[21:37:17] [co] ● gemini-2.5-pro · 2.3k tok · $0.0044                  ⚡ 11.5s
+[21:37:17] [co] ═══════════════════════════════════════════════
+[21:37:17] [co] [OK] complete · 11.0k tokens · $0.025 · 11.5s
+[21:37:17] [co]   .co/evals/user_input_user_input_system_state_2026_01_18_21.yaml
