@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -26,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -42,19 +42,16 @@ next-env.d.ts
 venv/
 __pycache__/
 *.pyc
+*.py[cod]
 
 # IDE
 .cursor/
 .shared/
-=======
+
 # ConnectOnion
-.env
 .co/keys/
 .co/cache/
 .co/logs/
 .co/history/
 co-vibecoding-principles-docs-contexts-all-in-one.md
-*.py[cod]
-__pycache__/
 todo.md
->>>>>>> acc35ed (feat: add co config)
