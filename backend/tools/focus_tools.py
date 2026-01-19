@@ -208,14 +208,40 @@ class ContextTool:
         timed = [t for t in tasks if t.get("start_dt")]
         if not timed:
             return "no_timed", tasks[0]
-        for task in timed:
+        
+        # 过滤掉已完成的任务，不再将其视为“当前专注”的目标
+        # 这样如果当前时间段的任务已完成，会自动滑向下一个即将开始的任务（upcoming）
+        pending_timed = [
+            t for t in timed 
+            if str(t.get("status", "")).lower() not in {"done", "completed", "complete"}
+        ]
+        
+        # 如果所有有时间的任务都做完了，返回最后一个任务标记为 finished
+        if not pending_timed:
+            return "finished", timed[-1]
+
+        for task in pending_timed:
             start_dt = task.get("start_dt")
             end_dt = task.get("end_dt") or start_dt
+            
+            # 1. 刚好在时间窗口内 -> current
             if start_dt <= now <= end_dt:
                 return "current", task
+            
+            # 2. 时间窗口还没到 -> upcoming
+            # 由于 pending_timed 已经按时间排序，遇到的第一个“未来”任务即为 upcoming
             if start_dt > now:
+                # 【优化】如果下一个任务在 20 分钟内开始，且之前的任务都已完成，
+                # 我们将其视为 "current"（提前进入状态），以便 IdleWatcher 生效。
+                diff_minutes = (start_dt - now).total_seconds() / 60
+                if diff_minutes <= 20:
+                     return "current", task
                 return "upcoming", task
-        return "finished", timed[-1]
+        
+        # 如果代码走到这里，说明所有 pending 任务的时间窗口都已过去（overdue）
+        # 或者当前时间处于任务之间的空隙（且之前的都做完了）。
+        # 这种情况下，我们找第一个 pending 任务作为 fallback
+        return "upcoming", pending_timed[0]
 
     def _plan_date_from_path(self, path: str) -> datetime.date:
         try:

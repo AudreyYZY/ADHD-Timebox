@@ -54,10 +54,10 @@ def main():
         context_tool=orchestrator.focus_agent.context_tool,
         on_idle=_build_idle_handler(orchestrator),
         interval_seconds=30,
-        idle_threshold_seconds=300,  # 5分钟不动 -> 提醒
-        cooldown_seconds=600,  # 提醒后 10分钟不打扰
+        idle_threshold_seconds=300,  # 5分钟不动 -> 提醒 300
+        cooldown_seconds=600,  # 提醒后 10分钟不打扰 600
         focus_only=True,
-        routine_check_seconds=300,  # 每 5 分钟检查一次窗口相关性 (无论是否动鼠标)
+        routine_check_seconds=300,  # 每 5 分钟检查一次窗口相关性 (无论是否动鼠标)300
     )
     idle_watcher.start()
 

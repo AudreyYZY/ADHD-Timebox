@@ -277,10 +277,7 @@ class ParkingService:
                 or ""
             )
             snippet = (
-                item.get("body")
-                or item.get("snippet")
-                or item.get("description")
-                or ""
+                item.get("body") or item.get("snippet") or item.get("description") or ""
             )
             snippet = " ".join(str(snippet).split())
             if len(snippet) > 100:

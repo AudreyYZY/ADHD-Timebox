@@ -173,7 +173,9 @@ class PlanManager:
 
         # 尝试读取今天已有的文件
         plan_date_str = plan_date.isoformat()
-        existing_tasks, path, _ = self._load_tasks(plan_date_str, create_if_missing=True)
+        existing_tasks, path, _ = self._load_tasks(
+            plan_date_str, create_if_missing=True
+        )
         if existing_tasks is None:
             existing_tasks = []
 
@@ -268,6 +270,7 @@ class PlanManager:
         task_id: str,
         new_start: str,
         new_end: str,
+        new_title: Optional[str] = None,
         force: bool = False,
         target_date: Optional[str] = None,
     ) -> str:
@@ -276,6 +279,7 @@ class PlanManager:
         - 冲突时返回 CONFLICT 消息（除非 force=True）
         - 成功后写回 JSON，并尝试同步日历
         - 支持通过 target_date 指定调整哪一天的任务（默认今日）
+        - 如果传入的 task_id 是数字，会尝试按序号（1-based）查找任务
         """
         today = datetime.date.today()
         plan_date, date_err = self._determine_plan_date_for_update(
@@ -327,10 +331,16 @@ class PlanManager:
         if target_task:
             target_task["start"] = start_text
             target_task["end"] = end_text
+            if new_title:
+                target_task["title"] = new_title
         else:
+            # 没找到任务，且没提供标题，认为是 ID 错误，拒绝创建
+            if not new_title:
+                return f"❌ 未找到 ID 为 '{task_id}' 的任务。无法更新。如需创建新任务，请提供 new_title 参数。"
+
             new_task = {
                 "id": task_id,
-                "title": task_id,
+                "title": new_title,
                 "start": start_text,
                 "end": end_text,
                 "type": "work",
@@ -470,9 +480,24 @@ class PlanManager:
         return None
 
     def _find_task(self, tasks: List[Dict], task_id: str) -> Optional[Dict]:
+        """Find task by id, title, or index (1-based string)."""
+        # 1. 精确匹配 ID 或 Title
         for task in tasks:
             if task.get("id") == task_id or task.get("title") == task_id:
                 return task
+
+        # 2. 尝试解析为序号 (1-based index)
+        if task_id.isdigit():
+            try:
+                idx = int(task_id) - 1
+                # 需先按时间排序，确保序号与 list_tasks 一致
+                # 注意：这里需要与 list_tasks 使用相同的排序逻辑
+                sorted_tasks = sorted(tasks, key=lambda t: t.get("start") or "")
+                if 0 <= idx < len(sorted_tasks):
+                    return sorted_tasks[idx]
+            except (ValueError, IndexError):
+                pass
+
         return None
 
     def _find_conflicts(
@@ -541,7 +566,10 @@ class PlanManager:
             parsed = datetime.datetime.strptime(text, "%Y-%m-%d").date()
             return parsed, None
         except Exception:
-            return today, f"无法解析目标日期：{target_date}（期望 YYYY-MM-DD 或 tomorrow）。"
+            return (
+                today,
+                f"无法解析目标日期：{target_date}（期望 YYYY-MM-DD 或 tomorrow）。",
+            )
 
     def _extract_date_from_text(self, value: Optional[str]) -> Optional[datetime.date]:
         """Extract date component from a datetime string if present."""
@@ -584,7 +612,10 @@ class PlanManager:
                 plan_date = explicit_dates[0]
             if any(d != plan_date for d in explicit_dates):
                 dates_text = "、".join(sorted({d.isoformat() for d in explicit_dates}))
-                return plan_date, f"任务包含多个日期：{dates_text}，请分开保存或指定统一的 target_date。"
+                return (
+                    plan_date,
+                    f"任务包含多个日期：{dates_text}，请分开保存或指定统一的 target_date。",
+                )
 
         return plan_date, None
 
@@ -668,7 +699,9 @@ class PlanManager:
             return match.group(1).strip()
         return None
 
-    def _sync_calendar(self, task: Dict, action: str) -> Tuple[bool, Optional[str], str]:
+    def _sync_calendar(
+        self, task: Dict, action: str
+    ) -> Tuple[bool, Optional[str], str]:
         """
         尝试同步到 Google Calendar，失败不抛异常。
         返回 (是否成功, event_id, 反馈文案)；action: create/update/delete
@@ -728,7 +761,9 @@ class PlanManager:
                         title=title, start=iso_start, end=iso_end
                     )
                 new_id = self._extract_event_id(resp) or event_id
-                debug_log(f"[Calendar] ✅ 创建成功 {title} | id={new_id} | 响应: {resp}")
+                debug_log(
+                    f"[Calendar] ✅ 创建成功 {title} | id={new_id} | 响应: {resp}"
+                )
                 return True, new_id, "，并已同步到日历"
             except Exception as exc:
                 debug_log(
@@ -754,7 +789,9 @@ class PlanManager:
                         end=iso_end,
                     )
                 new_id = self._extract_event_id(resp) or event_id
-                debug_log(f"[Calendar] ✅ 更新成功 {title} | id={new_id} | 响应: {resp}")
+                debug_log(
+                    f"[Calendar] ✅ 更新成功 {title} | id={new_id} | 响应: {resp}"
+                )
                 return True, new_id, "，并已同步到日历"
             except Exception as exc:
                 debug_log(

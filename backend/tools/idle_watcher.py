@@ -91,6 +91,9 @@ class IdleWatcher:
             if not isinstance(focus_state, dict):
                 return
             if focus_state.get("status") != "current":
+                # 即使检测到空闲，如果不在专注任务中，也不打扰
+                # 为了调试可见性，打印一条淡出的日志
+                print(f"\n[IdleWatcher] 检测到空闲 {idle_seconds}秒，但当前非专注时间 (Status={focus_state.get('status')})，不予打扰。")
                 return
 
         active_window = self.context_tool.get_active_window()
