@@ -1,257 +1,144 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Calm, warm palette for ADHD-friendly interface */
+  --background: oklch(0.98 0.005 90);
+  --foreground: oklch(0.25 0.02 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.02 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.02 60);
+  /* Warm sage green - calming primary */
+  --primary: oklch(0.55 0.1 160);
+  --primary-foreground: oklch(0.98 0.005 90);
+  /* Soft cream secondary */
+  --secondary: oklch(0.95 0.01 85);
+  --secondary-foreground: oklch(0.35 0.02 60);
+  --muted: oklch(0.94 0.01 85);
+  --muted-foreground: oklch(0.5 0.02 60);
+  /* Soft teal accent */
+  --accent: oklch(0.7 0.08 180);
+  --accent-foreground: oklch(0.25 0.02 60);
+  /* Gentle warning - warm amber */
+  --destructive: oklch(0.65 0.15 50);
+  --destructive-foreground: oklch(0.98 0.005 90);
+  --border: oklch(0.9 0.01 85);
+  --input: oklch(0.92 0.01 85);
+  --ring: oklch(0.55 0.1 160);
+  /* Safe/gentle green for positive feedback */
+  --safe: oklch(0.65 0.12 150);
+  --safe-foreground: oklch(0.98 0.005 90);
+  /* Warm highlight for focus mode */
+  --focus: oklch(0.85 0.08 85);
+  --focus-foreground: oklch(0.25 0.02 60);
+  --chart-1: oklch(0.55 0.1 160);
+  --chart-2: oklch(0.7 0.08 180);
+  --chart-3: oklch(0.65 0.12 150);
+  --chart-4: oklch(0.65 0.15 50);
+  --chart-5: oklch(0.6 0.1 30);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.97 0.005 90);
+  --sidebar-foreground: oklch(0.25 0.02 60);
+  --sidebar-primary: oklch(0.55 0.1 160);
+  --sidebar-primary-foreground: oklch(0.98 0.005 90);
+  --sidebar-accent: oklch(0.94 0.01 85);
+  --sidebar-accent-foreground: oklch(0.25 0.02 60);
+  --sidebar-border: oklch(0.9 0.01 85);
+  --sidebar-ring: oklch(0.55 0.1 160);
+}
+
+.dark {
+  --background: oklch(0.16 0.02 60);
+  --foreground: oklch(0.92 0.01 85);
+  --card: oklch(0.2 0.02 60);
+  --card-foreground: oklch(0.92 0.01 85);
+  --popover: oklch(0.2 0.02 60);
+  --popover-foreground: oklch(0.92 0.01 85);
+  --primary: oklch(0.65 0.1 160);
+  --primary-foreground: oklch(0.16 0.02 60);
+  --secondary: oklch(0.25 0.02 60);
+  --secondary-foreground: oklch(0.92 0.01 85);
+  --muted: oklch(0.25 0.02 60);
+  --muted-foreground: oklch(0.65 0.02 60);
+  --accent: oklch(0.6 0.08 180);
+  --accent-foreground: oklch(0.92 0.01 85);
+  --destructive: oklch(0.55 0.15 50);
+  --destructive-foreground: oklch(0.92 0.01 85);
+  --border: oklch(0.3 0.02 60);
+  --input: oklch(0.3 0.02 60);
+  --ring: oklch(0.65 0.1 160);
+  --safe: oklch(0.55 0.12 150);
+  --safe-foreground: oklch(0.92 0.01 85);
+  --focus: oklch(0.35 0.05 85);
+  --focus-foreground: oklch(0.92 0.01 85);
+  --chart-1: oklch(0.65 0.1 160);
+  --chart-2: oklch(0.6 0.08 180);
+  --chart-3: oklch(0.55 0.12 150);
+  --chart-4: oklch(0.55 0.15 50);
+  --chart-5: oklch(0.5 0.1 30);
+  --sidebar: oklch(0.2 0.02 60);
+  --sidebar-foreground: oklch(0.92 0.01 85);
+  --sidebar-primary: oklch(0.65 0.1 160);
+  --sidebar-primary-foreground: oklch(0.16 0.02 60);
+  --sidebar-accent: oklch(0.25 0.02 60);
+  --sidebar-accent-foreground: oklch(0.92 0.01 85);
+  --sidebar-border: oklch(0.3 0.02 60);
+  --sidebar-ring: oklch(0.65 0.1 160);
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-safe: var(--safe);
+  --color-safe-foreground: var(--safe-foreground);
+  --color-focus: var(--focus);
+  --color-focus-foreground: var(--focus-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
 
 @layer base {
   * {
-    @apply transition-colors duration-150 ease-out;
+    @apply border-border outline-ring/50;
   }
-
-  /* 排除输入框的过渡效果，避免闪烁 */
-  input,
-  textarea,
-  select {
-    @apply transition-none;
-  }
-
-  html {
-    @apply scroll-smooth;
-  }
-
   body {
-    @apply font-sans antialiased bg-calm-50 text-calm-800;
-    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont,
-      "Segoe UI", sans-serif;
-    line-height: 1.75; /* 改进的行高 - 1.75 符合最佳实践 */
-    letter-spacing: -0.01em;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* 标题层次 - 使用一致的字体大小比例 (12 14 16 18 24 32) */
-  h1 {
-    @apply text-4xl font-bold leading-tight;
-  }
-
-  h2 {
-    @apply text-2xl font-semibold leading-tight;
-  }
-
-  h3 {
-    @apply text-xl font-semibold leading-snug;
-  }
-
-  h4 {
-    @apply text-lg font-medium leading-snug;
-  }
-
-  /* 改进的键盘焦点状态 - 更明显的焦点环 (3-4px) */
-  *:focus-visible {
-    @apply outline-none;
-  }
-
-  /* 输入框不显示焦点环 */
-  input:focus-visible {
-    @apply outline-none ring-0;
-  }
-
-  /* 触摸目标最小尺寸 - 44x44px (符合可访问性标准) */
-  button,
-  a,
-  [role="button"] {
-    @apply min-h-[44px];
-  }
-
-  /* 减少动画（尊重用户偏好） */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-}
-
-@layer components {
-  /* Soft UI Evolution 卡片样式 - 改进的阴影和对比度 */
-  .card-soft {
-    @apply bg-white rounded-2xl shadow-soft border border-calm-100;
-  }
-
-  .card-soft-elevated {
-    @apply bg-white rounded-2xl shadow-soft-md border border-calm-200;
-  }
-
-  .card-soft-hover {
-    @apply card-soft transition-all duration-200 ease-out;
-  }
-
-  .card-soft-hover:hover {
-    @apply shadow-soft-md border-calm-200;
-  }
-
-  /* 改进的按钮样式 - Soft UI Evolution */
-  .btn-primary {
-    @apply bg-calm-500 text-white px-6 py-3 rounded-xl font-semibold text-base
-           hover:bg-calm-600 active:scale-[0.98] 
-           transition-all duration-200 ease-out
-           focus-visible:ring-2 focus-visible:ring-calm-500 focus-visible:ring-offset-2
-           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
-           min-h-[44px] min-w-[44px];
-  }
-
-  .btn-secondary {
-    @apply bg-calm-50 text-calm-700 px-6 py-3 rounded-xl font-semibold text-base
-           hover:bg-calm-100 active:scale-[0.98]
-           transition-all duration-200 ease-out
-           focus-visible:ring-2 focus-visible:ring-calm-500 focus-visible:ring-offset-2
-           min-h-[44px] min-w-[44px];
-  }
-
-  /* Soft UI 输入框样式 */
-  .input-soft {
-    @apply w-full px-4 py-3 bg-white border border-calm-200 rounded-xl
-           text-base leading-relaxed
-           focus:outline-none focus:ring-2 focus:ring-calm-500 focus:border-calm-500
-           placeholder:text-calm-400 placeholder:opacity-70
-           transition-all duration-150 ease-out
-           shadow-soft;
-  }
-
-  .input-soft:focus {
-    @apply shadow-soft-md;
-  }
-}
-
-@layer utilities {
-  /* 自定义动画 - Soft UI Evolution 风格 (200-300ms) */
-  .animate-fade-in {
-    animation: fadeIn 200ms ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 200ms ease-out;
-  }
-
-  .animate-scale-up {
-    animation: scaleUp 200ms ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 300ms ease-out;
-  }
-
-  /* Custom scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
-  }
-
-  .animate-soft-press {
-    animation: softPress 200ms ease-out;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes scaleUp {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes softPress {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(0.98);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  /* 间距工具类 - 基于 8px 网格，最小间距 8px */
-  .space-section {
-    @apply space-y-8;
-  }
-
-  .space-component {
-    @apply space-y-4;
-  }
-
-  .space-tight {
-    @apply space-y-2;
-  }
-
-  /* 触摸目标间距 - 至少 8px */
-  .touch-gap {
-    @apply gap-2;
-  }
-
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.3);
-    border-radius: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.5);
+    @apply bg-background text-foreground;
   }
 }
