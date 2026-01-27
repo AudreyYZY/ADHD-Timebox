@@ -1,0 +1,115 @@
+"""Chat endpoint bridging to Orchestrator."""
+
+from __future__ import annotations
+
+import os
+from typing import Optional, Tuple
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
+
+from api.dependencies import get_app_state
+from api.errors import error_response
+from core.events import enqueue_event
+
+router = APIRouter()
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatResponse(BaseModel):
+    content: str
+    status: str
+    agent: str
+    tasks_updated: bool
+    ascii_art: Optional[str] = None
+
+
+def _latest_plan_snapshot(plan_dir: str) -> Tuple[Optional[float], Optional[str]]:
+    if not plan_dir or not os.path.isdir(plan_dir):
+        return None, None
+    candidates = [
+        name
+        for name in os.listdir(plan_dir)
+        if name.startswith("daily_tasks_") and name.endswith(".json")
+    ]
+    if not candidates:
+        return None, None
+    paths = [os.path.join(plan_dir, name) for name in candidates]
+    newest = max(paths, key=lambda p: os.path.getmtime(p))
+    return os.path.getmtime(newest), newest
+
+
+def _extract_ascii_art(content: str) -> Tuple[str, Optional[str]]:
+    note = "(SYSTEM NOTE: 请务必在最终回复中原样展示上述 ASCII Art 奖励，不要省略。)"
+    if note not in content:
+        return content, None
+
+    base = content.split(note)[0].rstrip()
+    parts = base.split("\n\n")
+    if len(parts) < 2:
+        return base, None
+    ascii_art = parts[-1].strip("\n")
+    main_content = "\n\n".join(parts[:-1]).strip()
+    return main_content, ascii_art or None
+
+
+@router.post("/api/chat", response_model=ChatResponse)
+async def chat(payload: ChatRequest, state=Depends(get_app_state)):
+    if state.orchestrator is None:
+        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+
+    message = (payload.message or "").strip()
+    if not message:
+        return error_response(400, "INVALID_MESSAGE", "message 不能为空")
+
+    plan_dir = state.orchestrator.plan_manager.plan_dir
+    before_mtime, _ = _latest_plan_snapshot(plan_dir)
+
+    try:
+        content = await run_in_threadpool(state.orchestrator.route, message)
+    except Exception as exc:
+        return error_response(500, "ORCHESTRATOR_ERROR", "对话处理失败", str(exc))
+
+    after_mtime, newest_path = _latest_plan_snapshot(plan_dir)
+    tasks_updated = before_mtime != after_mtime and after_mtime is not None
+
+    status = "CONTINUE" if state.orchestrator.locked_agent else "FINISHED"
+    agent = state.orchestrator.last_agent or "orchestrator"
+
+    clean_content, ascii_art = _extract_ascii_art(content or "")
+
+    if tasks_updated and newest_path:
+        try:
+            import json
+
+            from tools.plan_tools_v2 import PlanManager
+
+            plan_date = PlanManager()._plan_date_from_path(newest_path)
+            with open(newest_path, "r", encoding="utf-8") as f:
+                tasks = json.load(f)
+            tasks_count = len(tasks) if isinstance(tasks, list) else 0
+            enqueue_event(
+                state.event_queue,
+                state.event_loop,
+                {
+                    "event": "plan_updated",
+                    "data": {
+                        "date": plan_date.isoformat(),
+                        "tasks_count": tasks_count,
+                    },
+                },
+            )
+        except Exception:
+            pass
+
+    return ChatResponse(
+        content=clean_content or "",
+        status=status,
+        agent=agent,
+        tasks_updated=tasks_updated,
+        ascii_art=ascii_art,
+    )
