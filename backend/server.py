@@ -7,8 +7,9 @@ import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import auth, chat, events, focus, health, tasks
+from api.routes import auth, chat, events, focus, health, parking, tasks
 from core.events import build_idle_handler
 from core.plan_manager import PlanManagerWithLock
 from core.state import app_state
@@ -19,12 +20,21 @@ from agents.orchestrator import OrchestratorAgent
 def create_app() -> FastAPI:
     app = FastAPI(title="ADHD Timebox API")
 
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(tasks.router)
     app.include_router(events.router)
     app.include_router(focus.router)
     app.include_router(auth.router)
+    app.include_router(parking.router)
 
     @app.on_event("startup")
     async def startup() -> None:

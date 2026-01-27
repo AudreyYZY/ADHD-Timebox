@@ -52,6 +52,7 @@ interface AppState {
 
   // Tasks history
   tasks: Task[];
+  setTasks: (tasks: Task[]) => void;
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
 
@@ -102,6 +103,7 @@ export const useAppStore = create<AppState>()(
 
       // Tasks
       tasks: [],
+      setTasks: (tasks) => set({ tasks }),
       addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
       updateTask: (id, updates) =>
         set((state) => ({

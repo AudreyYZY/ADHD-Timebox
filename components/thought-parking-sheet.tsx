@@ -1,10 +1,7 @@
 "use client";
 
-import React from "react";
-
-import { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
-import { TextStreamChatTransport } from "ai";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { api } from "@/app/utils/api";
 import {
   Sheet,
   SheetContent,
@@ -14,19 +11,20 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send, ParkingCircle } from "lucide-react";
 
-function getMessageText(message: {
-  parts?: Array<{ type: string; text?: string }>;
-}): string {
-  if (!message.parts || !Array.isArray(message.parts)) return "";
-  return message.parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("");
-}
+const createMessage = (
+  role: ChatMessage["role"],
+  content: string
+): ChatMessage => ({
+  id: crypto.randomUUID(),
+  role,
+  content,
+  timestamp: new Date(),
+  channel: "parking",
+});
 
 function PendingIndicator() {
   return (
@@ -58,25 +56,45 @@ function PendingIndicator() {
 
 export function ThoughtParkingSheet() {
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { showThoughtParking, setShowThoughtParking, userState } =
-    useAppStore();
-
-  const { messages, sendMessage, status } = useChat({
-    transport: new TextStreamChatTransport({ api: "/api/chat/stream" }),
-  });
-
-  const isLoading = status === "streaming" || status === "submitted";
+  const {
+    showThoughtParking,
+    setShowThoughtParking,
+    userState,
+    parkingMessages,
+    addParkingMessage,
+  } = useAppStore();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [parkingMessages, isLoading]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    sendMessage({ text: input });
+    const messageText = input.trim();
+    if (!messageText || isLoading) return;
+
     setInput("");
+    addParkingMessage(createMessage("user", messageText));
+    setIsLoading(true);
+
+    try {
+      const response = await api.parkThought(messageText);
+      addParkingMessage(
+        createMessage("assistant", response.content || "Thought saved.")
+      );
+    } catch (error) {
+      console.error("Parking error:", error);
+      addParkingMessage(
+        createMessage(
+          "assistant",
+          "Sorry, I couldn't save that thought right now."
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -111,7 +129,7 @@ export function ThoughtParkingSheet() {
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.length === 0 && (
+              {parkingMessages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <p className="text-sm text-muted-foreground max-w-xs">
                     Vent, ask random questions, or just dump your thoughts.
@@ -121,48 +139,30 @@ export function ThoughtParkingSheet() {
                 </div>
               )}
 
-              {messages.map((message) => {
-                const text = getMessageText(message);
-                if (!text) return null;
-
-                return (
+              {parkingMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "flex",
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                >
                   <div
-                    key={message.id}
                     className={cn(
-                      "flex",
-                      message.role === "user" ? "justify-end" : "justify-start",
+                      "max-w-[85%] rounded-2xl px-4 py-2.5",
+                      message.role === "user"
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-muted text-muted-foreground"
                     )}
                   >
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-2.5",
-                        message.role === "user"
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {text}
-                      </p>
-                    </div>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
                   </div>
-                );
-              })}
+                </div>
+              ))}
 
-              {(() => {
-                const lastMessage = messages[messages.length - 1];
-                const lastMessageText = lastMessage
-                  ? getMessageText(lastMessage)
-                  : "";
-                const waitingForAssistant =
-                  status === "submitted" ||
-                  (status === "streaming" &&
-                    (!lastMessage ||
-                      lastMessage.role !== "assistant" ||
-                      !lastMessageText));
-
-                return waitingForAssistant ? <PendingIndicator /> : null;
-              })()}
+              {isLoading && <PendingIndicator />}
 
               <div ref={messagesEndRef} />
             </div>

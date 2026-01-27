@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Plan PTE writing structure",
+    "start": "2026-01-28 15:45",
+    "end": "2026-01-28 16:30",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769574698_0",
+    "google_event_id": null
+  },
+  {
+    "title": "Short break",
+    "start": "2026-01-28 16:30",
+    "end": "2026-01-28 16:45",
+    "type": "break",
+    "status": "pending",
+    "id": "task_1769574698_1",
+    "google_event_id": null
+  },
+  {
+    "title": "Draft PTE essay",
+    "start": "2026-01-28 16:45",
+    "end": "2026-01-28 17:30",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769574698_2",
+    "google_event_id": null
+  },
+  {
+    "title": "Review and edit draft",
+    "start": "2026-01-28 17:30",
+    "end": "2026-01-28 17:45",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769574698_3",
+    "google_event_id": null
+  }
+]

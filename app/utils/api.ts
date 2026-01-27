@@ -1,24 +1,44 @@
 const API_BASE_URL = "http://localhost:8000/api";
 
 export interface ChatResponse {
-  response: string;
+  content: string;
   status: string;
+  agent: string;
+  tasks_updated: boolean;
+  ascii_art?: string | null;
 }
 
 export interface BackendTask {
   id: string;
   title: string;
-  priority: string;
-  estimatedMinutes?: number;
-  cognitiveLoad?: string;
+  start?: string | null;
+  end?: string | null;
+  type?: string;
   status: string;
+  google_event_id?: string | null;
 }
 
 export interface RecommendationResponse {
   taskId: string;
   durationMinutes: number;
   reason: string;
-  preferLowCognitiveLoad: bool;
+  preferLowCognitiveLoad: boolean;
+}
+
+export interface ParkingResponse {
+  content: string;
+  status: string;
+  agent: string;
+}
+
+interface TasksResponse {
+  date: string;
+  tasks: BackendTask[];
+  summary?: {
+    total: number;
+    done: number;
+    pending: number;
+  };
 }
 
 export const api = {
@@ -39,19 +59,11 @@ export const api = {
     if (!res.ok) {
       throw new Error("Failed to fetch tasks");
     }
-    return res.json();
-  },
-
-  getRecommendation: async (context: any): Promise<RecommendationResponse> => {
-    const res = await fetch(`${API_BASE_URL}/recommend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ context }),
-    });
-    if (!res.ok) {
-      throw new Error("Failed to get recommendation");
+    const data = (await res.json()) as TasksResponse;
+    if (!data || !Array.isArray(data.tasks)) {
+      return [];
     }
-    return res.json();
+    return data.tasks;
   },
 
   updateTaskStatus: async (taskId: string, status: string): Promise<void> => {
@@ -63,5 +75,20 @@ export const api = {
     if (!res.ok) {
       throw new Error("Failed to update task status");
     }
+  },
+
+  parkThought: async (
+    message: string,
+    thoughtType?: "search" | "memo" | "todo"
+  ): Promise<ParkingResponse> => {
+    const res = await fetch(`${API_BASE_URL}/parking`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, thought_type: thoughtType }),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to park thought");
+    }
+    return res.json();
   },
 };

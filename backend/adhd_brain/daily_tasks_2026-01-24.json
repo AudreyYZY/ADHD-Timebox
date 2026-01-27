@@ -1,0 +1,47 @@
+[
+  {
+    "title": "深度工作：撰写技术文档",
+    "start": "2026-01-24 15:30",
+    "end": "2026-01-24 16:30",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769228532_0",
+    "google_event_id": null
+  },
+  {
+    "title": "缓冲休息",
+    "start": "2026-01-24 16:30",
+    "end": "2026-01-24 16:45",
+    "type": "break",
+    "status": "pending",
+    "id": "task_1769228532_1",
+    "google_event_id": null
+  },
+  {
+    "title": "专注学习：PTE WFD",
+    "start": "2026-01-24 16:45",
+    "end": "2026-01-24 17:45",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769228532_2",
+    "google_event_id": null
+  },
+  {
+    "title": "户外放松：享受日光浴",
+    "start": "2026-01-24 17:45",
+    "end": "2026-01-24 18:00",
+    "type": "break",
+    "status": "pending",
+    "id": "task_1769228532_3",
+    "google_event_id": null
+  },
+  {
+    "title": "活力时间：进行体育锻炼",
+    "start": "2026-01-24 18:00",
+    "end": "2026-01-24 18:45",
+    "type": "health",
+    "status": "pending",
+    "id": "task_1769228532_4",
+    "google_event_id": null
+  }
+]

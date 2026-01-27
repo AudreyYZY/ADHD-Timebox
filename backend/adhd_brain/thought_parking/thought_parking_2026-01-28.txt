@@ -1,0 +1,40 @@
+[00:30:51] 📥 收到: 有一个 agent (from thought_parking)
+[00:30:53] ✅ 完成: 有一个 agent
+   → 🔍 搜索结果：
+   → 1. What are AI agents? Definition, examples, and types | Google Cloud
+   → AI agents are software systems that use AI to pursue goals and complete tasks on behalf of users. Le...
+   → 来源: https://cloud.google.com/discover/what-are-ai-agents
+   → 2. 智能代理Agent：AI 智能体 - 知乎
+   → 当然，大模型基于自身的知识可以做逻辑推理和一定的规划也可以加向量数据库解决推理问题，加 Reflection 让过程更丰富，如此看来，可将大模型这个端到端的黑盒子变得显性化一点儿——其实符号就是一个非...
+   → 来源: https://zhuanlan.zhihu.com/p/659386520
+   → 3. Agent是什么？一文看懂agent概念、分类、原理、应用场景、趋势 - 知乎
+   → 反应式 Agent 是较为基础的类型，它的行为主要基于当前所感知到的环境信息，直接依据预设的规则做出反应，而不考虑过去的状态或对未来进行规划。简单来说，它就像一个 “条件反射机器”，只要满足特定的条件...
+   → 来源: https://zhuanlan.zhihu.com/p/23225486289
+   → （共 3 条结果，完整内容见 current_parking.json）
+[00:30:58] 📥 收到: 有一个agent (from thought_parking)
+[00:31:00] ✅ 完成: 有一个agent
+   → 🔍 搜索结果：
+   → 1. 万字长文|读懂Agent，这一篇就够了 - 知乎
+   → 引言去年曾发文说大模型Agent是2024年的发力点，现在随着基模能力越来越强，今年的AI Agent仍将是热门话题，而且一些最新学术研究都与Agent相关。作为今年特别重要的一个风口，躺在风口上也能...
+   → 来源: https://zhuanlan.zhihu.com/p/1900636028429144695
+   → 2. "关于 AI Agent，你最想知道的 3 个问题——为什么我说"垂直 Agent"是个伪命题"
+   → AI Agent 正在从极客圈走向大众。本文回答三个核心问题：什么是 Agent 的权威定义、为什么大厂在这个时间点密集推出 Agent 、以及为什么"垂直 Agent "是个伪命题——真正的护城河不...
+   → 来源: https://baoyu.io/blog/2026/01/18/ai-agent-interview
+   → 3. Agent编写全攻略（超详细）从零基础到精通，一篇搞定，不看后悔，赶紧收藏! - yangykaifa - 博客园
+   → 如果说「 Agent 工作流」是 Agent 之间的顺序接力，那么 Multi- Agent 系统就是 Agent 之间的 并行协作。 在一个多 Agent 系统中，通常有一个扮演「管理者」角色的 O...
+   → 来源: https://www.cnblogs.com/yangykaifa/p/19274840
+   → （共 3 条结果，完整内容见 current_parking.json）
+[00:31:17] 📥 收到: 有一个ai (from thought_parking)
+[00:31:19] ✅ 完成: 有一个ai
+   → 🔍 搜索结果：
+   → 1. 豆包 - 字节跳动旗下 Ai 智能助手
+   → 豆包是你的 AI 聊天智能对话问答助手，写作文案翻译编程全能工具。豆包为你答疑解惑，提供灵感，辅助创作，也可以和你畅 ...
+   → 来源: https://www.doubao.com/
+   → 2. 2026最强个人 AI 助理，ClawdBot 完整安装教程 - 知乎
+   → ClawdBot 是一个开源的自托管个人 AI 助手项目，由开发者 Peter Steinberger 创建。它允许你在自己的设备（如Mac、Windows、Linux电脑或服务器）上运行 AI 助理...
+   → 来源: https://zhuanlan.zhihu.com/p/1999125164705723831
+   → 3. 普通人如何开始学习 Ai？一份零基础也能看懂的入门路线图
+   → AI零基础入门指南：从Python基础到实战项目开发。学习路线清晰，包含机器学习、深度学习等核心技术，推荐免费资源与实用工具。适合普通人快速上手AI开发，掌握计算机视觉、自然语言处理等热门方向，构建个...
+   → 来源: https://cloud.tencent.com/developer/article/2605552
+   → （共 3 条结果，完整内容见 current_parking.json）
+[15:34:18] 📥 Received: 明天要参加马拉松 (from focus_mode)

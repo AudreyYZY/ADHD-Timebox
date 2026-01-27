@@ -4,7 +4,6 @@ import {
   DecisionAgentContext,
   TimeBoxOutcome,
 } from "../types";
-import { api } from "../utils/api";
 
 // Decision Agent 接口
 export interface IDecisionAgent {
@@ -19,19 +18,8 @@ export class APIDecisionAgent implements IDecisionAgent {
   async recommend(
     context: DecisionAgentContext
   ): Promise<TimeBoxRecommendation> {
-    try {
-      const result = await api.getRecommendation(context);
-      return {
-          taskId: result.taskId,
-          durationMinutes: result.durationMinutes,
-          reason: result.reason,
-          preferLowCognitiveLoad: result.preferLowCognitiveLoad
-      };
-    } catch (error) {
-      console.error("Backend recommendation failed, falling back to local logic", error);
-      // Fallback to local logic if backend fails
-      return new DefaultDecisionAgent().recommend(context);
-    }
+    // Backend recommendation endpoint is not available yet.
+    return new DefaultDecisionAgent().recommend(context);
   }
 }
 

@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { api } from "@/app/utils/api";
+import { toStoreTask } from "@/app/utils/taskAdapter";
 import { useAppStore } from "@/lib/store";
 import { StateIndicator } from "./state-indicator";
 import { PlanningMode } from "./planning-mode";
@@ -11,7 +14,29 @@ import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
 
 export function AppShell() {
-  const { userState, hasCompletedOnboarding, hasHydrated } = useAppStore();
+  const { userState, hasCompletedOnboarding, hasHydrated, setTasks } = useAppStore();
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    let isMounted = true;
+
+    const loadTasks = async () => {
+      try {
+        const backendTasks = await api.getTasks();
+        if (!isMounted) return;
+        setTasks(backendTasks.map(toStoreTask));
+      } catch (error) {
+        console.error("Failed to load tasks from backend", error);
+      }
+    };
+
+    loadTasks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hasHydrated, setTasks]);
 
   if (!hasHydrated) {
     return <div className="min-h-screen bg-background" aria-hidden="true" />;
