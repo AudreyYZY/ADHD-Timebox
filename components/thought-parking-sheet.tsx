@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react"
+import React from "react";
 
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
@@ -18,7 +18,9 @@ import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send, ParkingCircle, X } from "lucide-react";
 
-function getMessageText(message: { parts?: Array<{ type: string; text?: string }> }): string {
+function getMessageText(message: {
+  parts?: Array<{ type: string; text?: string }>;
+}): string {
   if (!message.parts || !Array.isArray(message.parts)) return "";
   return message.parts
     .filter((p): p is { type: "text"; text: string } => p.type === "text")
@@ -29,7 +31,8 @@ function getMessageText(message: { parts?: Array<{ type: string; text?: string }
 export function ThoughtParkingSheet() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { showThoughtParking, setShowThoughtParking, userState } = useAppStore();
+  const { showThoughtParking, setShowThoughtParking, userState } =
+    useAppStore();
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat/parking" }),
@@ -74,15 +77,6 @@ export function ThoughtParkingSheet() {
                   A safe place for whatever's on your mind. No judgment here.
                 </SheetDescription>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowThoughtParking(false)}
-                className="h-8 w-8"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
             </div>
           </SheetHeader>
 
@@ -92,8 +86,9 @@ export function ThoughtParkingSheet() {
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <p className="text-sm text-muted-foreground max-w-xs">
-                    Vent, ask random questions, or just dump your thoughts. 
-                    Everything shared here is safe and won't interrupt your task.
+                    Vent, ask random questions, or just dump your thoughts.
+                    Everything shared here is safe and won't interrupt your
+                    task.
                   </p>
                 </div>
               )}
@@ -107,7 +102,7 @@ export function ThoughtParkingSheet() {
                     key={message.id}
                     className={cn(
                       "flex",
-                      message.role === "user" ? "justify-end" : "justify-start"
+                      message.role === "user" ? "justify-end" : "justify-start",
                     )}
                   >
                     <div
@@ -115,10 +110,12 @@ export function ThoughtParkingSheet() {
                         "max-w-[85%] rounded-2xl px-4 py-2.5",
                         message.role === "user"
                           ? "bg-accent text-accent-foreground"
-                          : "bg-muted text-muted-foreground"
+                          : "bg-muted text-muted-foreground",
                       )}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {text}
+                      </p>
                     </div>
                   </div>
                 );
@@ -128,9 +125,18 @@ export function ThoughtParkingSheet() {
                 <div className="flex justify-start">
                   <div className="bg-muted rounded-2xl px-4 py-2.5">
                     <div className="flex gap-1">
-                      <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <span
+                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <span
+                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <span
+                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
                     </div>
                   </div>
                 </div>
