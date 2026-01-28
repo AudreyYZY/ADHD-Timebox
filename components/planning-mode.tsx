@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react"
+import React from "react";
 
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
@@ -25,7 +25,7 @@ export function PlanningMode() {
   const [taskDuration, setTaskDuration] = useState(15);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const { setCurrentTask, setUserState, setTimeRemaining, setIsTimerRunning, addTask } = useAppStore();
 
   const { messages, sendMessage, status } = useChat({
@@ -34,12 +34,21 @@ export function PlanningMode() {
 
   const isLoading = status === "streaming" || status === "submitted";
 
+  // ✅ IME 处理：避免 Enter 结束组词时直接触发发送
+  const [isComposing, setIsComposing] = useState(false);
+  const lastCompositionEndRef = useRef(0);
+  const shouldBlockEnterSend = () => Date.now() - lastCompositionEndRef.current < 80;
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ✅ 双保险：IME 组词中 or 刚结束组词的那一下 Enter，不发送
+    if (isComposing || shouldBlockEnterSend()) return;
+
     if (!input.trim() || isLoading) return;
     sendMessage({ text: input });
     setInput("");
@@ -86,10 +95,18 @@ export function PlanningMode() {
           </div>
         )}
 
-        {messages.map((message) => {
+        {messages.map((message, index) => {
           const text = getMessageText(message);
-          if (!text) return null;
-          
+          const isAssistantMessage = message.role === "assistant";
+          const isLatestMessage = index === messages.length - 1;
+          const shouldShowPending =
+            isAssistantMessage &&
+            !text &&
+            isLatestMessage &&
+            (status === "streaming" || status === "submitted");
+
+          if (!text && !shouldShowPending) return null;
+
           return (
             <div
               key={message.id}
@@ -106,7 +123,9 @@ export function PlanningMode() {
                     : "bg-card border border-border text-card-foreground"
                 )}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {shouldShowPending ? "..." : text}
+                </p>
               </div>
             </div>
           );
@@ -116,9 +135,18 @@ export function PlanningMode() {
           <div className="flex justify-start">
             <div className="bg-card border border-border rounded-2xl px-4 py-3">
               <div className="flex gap-1">
-                <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span
+                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <span
+                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <span
+                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                />
               </div>
             </div>
           </div>
@@ -185,13 +213,34 @@ export function PlanningMode() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="What's on your mind?"
             className="min-h-[52px] max-h-32 resize-none"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
             disabled={isLoading}
+            onCompositionStart={() => {
+              setIsComposing(true);
+            }}
+            onCompositionEnd={(e) => {
+              lastCompositionEndRef.current = Date.now();
+              setIsComposing(false);
+              setInput(e.currentTarget.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+
+              // Shift+Enter: 换行
+              if (e.shiftKey) return;
+
+              // ✅ 原生 isComposing + 我们的状态 + 刚结束窗口期：都拦住
+              // @ts-ignore
+              const nativeIsComposing = e.nativeEvent?.isComposing === true;
+
+              if (nativeIsComposing || isComposing || shouldBlockEnterSend()) {
+                return; // 让 IME 自己处理 Enter（确认候选/结束组词）
+              }
+
+              // 否则 Enter 发送
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(e);
+            }}
           />
           <div className="flex flex-col gap-2">
             <Button
@@ -205,7 +254,7 @@ export function PlanningMode() {
             </Button>
           </div>
         </form>
-        
+
         {messages.length > 0 && !showTaskForm && (
           <Button
             variant="outline"
