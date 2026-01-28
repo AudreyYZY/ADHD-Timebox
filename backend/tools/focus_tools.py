@@ -297,24 +297,31 @@ class FocusToolkit:
         标记指定任务为完成。task_id 可为任务 ID 或标题的子串。
         返回确认文本或错误提示，不抛异常。
         """
-        path = self.context_tool._resolve_plan_path()
-        if not path:
-            return "❌ 未找到计划文件，无法完成任务。"
-        tasks, plan_date = self.context_tool._load_tasks(path)
-        if tasks is None:
-            return f"❌ 计划文件不可读：{path}"
-
-        target = self._locate_task(tasks, task_id)
-        if target is None:
-            return f"❌ 未找到任务：{task_id}"
-
-        target["status"] = "done"
-        target["completed_at"] = datetime.datetime.now().astimezone().isoformat()
+        lock = getattr(self.plan_manager, "_file_lock", None)
+        if lock:
+            lock.__enter__()
         try:
-            with open(path, "w") as f:
-                json.dump(tasks, f, ensure_ascii=False, indent=2)
-        except Exception as exc:
-            return f"❌ 写入失败：{exc}"
+            path = self.context_tool._resolve_plan_path()
+            if not path:
+                return "❌ 未找到计划文件，无法完成任务。"
+            tasks, plan_date = self.context_tool._load_tasks(path)
+            if tasks is None:
+                return f"❌ 计划文件不可读：{path}"
+
+            target = self._locate_task(tasks, task_id)
+            if target is None:
+                return f"❌ 未找到任务：{task_id}"
+
+            target["status"] = "done"
+            target["completed_at"] = datetime.datetime.now().astimezone().isoformat()
+            try:
+                with open(path, "w") as f:
+                    json.dump(tasks, f, ensure_ascii=False, indent=2)
+            except Exception as exc:
+                return f"❌ 写入失败：{exc}"
+        finally:
+            if lock:
+                lock.__exit__(None, None, None)
 
         title = target.get("title") or task_id
         start_text = target.get("start") or "-"

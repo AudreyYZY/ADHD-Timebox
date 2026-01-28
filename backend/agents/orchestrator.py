@@ -59,11 +59,11 @@ STATUS_FINISHED = "FINISHED"
 class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Agent
     """Front-of-house router that simulates hand-offs."""
 
-    def __init__(self):
+    def __init__(self, plan_manager: Optional[PlanManager] = None):
         # 全局共享记忆，供 Planner / Focus / Reward 等 Agent 读取或写入
         self.shared_memory = Memory(memory_dir="adhd_brain/long_term_memory")
         # 预热 PlannerAgent，便于直接转接；PlanManager 提升为路由层依赖以做状态注入
-        self.plan_manager = PlanManager()
+        self.plan_manager = plan_manager or PlanManager()
         self.planner_agent = PlannerAgent(
             plan_manager=self.plan_manager, memory=self.shared_memory
         )
@@ -78,6 +78,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         # 会话锁：若被占用，则后续用户输入将直接转发至锁定 Agent
         self.locked_agent = None
         self.escape_words = {"退出", "exit", "stop", "解锁", "终止", "结束"}
+        self.last_agent = "orchestrator"
 
     def route(self, user_input: str) -> str:
         """
@@ -90,6 +91,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         if self._is_finish_day_intent(normalized):
             self.locked_agent = None
             summary = self.reward_agent.summarize_day()
+            self.last_agent = "reward"
             print(summary)
             return summary
 
@@ -97,6 +99,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         if self.locked_agent and any(word in normalized for word in self.escape_words):
             self.locked_agent = None
             msg = "🔓 已解除当前会话锁。"
+            self.last_agent = "orchestrator"
             print(msg)
             return msg
 
@@ -106,6 +109,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             envelope = self._safe_handle(self.locked_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(self.locked_agent, envelope)
+            self.last_agent = self._agent_name(self.locked_agent)
             # final_content = self._maybe_attach_daily_reward(content) # Removed auto-reward
             print(content)
             return content
@@ -147,6 +151,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
                     content=user_input, task_type="search", source="orchestrator"
                 )
                 self.locked_agent = None
+                self.last_agent = "parking"
                 # final_result = self._maybe_attach_daily_reward(result) # Removed auto-reward
                 # 不再打印，避免调用方重复显示
                 return result
@@ -154,12 +159,14 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             if not active_agent:
                 msg = f"暂未实现对 {target} 的处理。"
                 self.locked_agent = None
+                self.last_agent = "orchestrator"
                 print(msg)
                 return msg
 
             envelope = self._safe_handle(active_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(active_agent, envelope)
+            self.last_agent = self._agent_name(active_agent)
             # final_content = self._maybe_attach_daily_reward(content) # Removed auto-reward
             print(content)
             return content
@@ -167,6 +174,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         if raw.startswith("REPLY:"):
             reply = raw.replace("REPLY:", "", 1).strip()
             self.locked_agent = None
+            self.last_agent = "orchestrator"
             # final_reply = self._maybe_attach_daily_reward(reply) # Removed auto-reward
             print(reply)
             return reply
@@ -174,9 +182,23 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         # Fallback
         fallback = f"REPLY: {raw}"
         self.locked_agent = None
+        self.last_agent = "orchestrator"
         # final_fallback = self._maybe_attach_daily_reward(fallback) # Removed auto-reward
         print(fallback)
         return fallback
+
+    @staticmethod
+    def _agent_name(agent) -> str:
+        if agent is None:
+            return "orchestrator"
+        name = agent.__class__.__name__.lower()
+        if "planner" in name:
+            return "planner"
+        if "focus" in name:
+            return "focus"
+        if "reward" in name:
+            return "reward"
+        return name
 
     def _safe_handle(self, agent, user_input: str) -> dict:
         """调用目标 Agent 的 handle，并包装成信封；Planner 会自动注入 System State。"""

@@ -206,3 +206,86 @@ ni. what is your model?
 [21:37:17] [co] ═══════════════════════════════════════════════
 [21:37:17] [co] [OK] complete · 11.0k tokens · $0.025 · 11.5s
 [21:37:17] [co]   .co/evals/user_input_user_input_system_state_2026_01_18_21.yaml
+
+============================================================
+Session started: 2026-01-24 15:21:01
+============================================================
+
+
+  ○
+ ◎    planner_agent_v2
+●     ────────────────────
+      connectonion v0.6.2
+      gemini-2.5-pro · 8 tools
+      .co/logs/ · .co/evals/
+      credits on me, go build —aaron
+      ────────────────────
+
+[15:21:16] [co] > "<User_Input>
+今天的任务是 写文档 运动 晒太阳 学PTE WFD
+</User_Input>
+
+<System_State>
+当前时间：2026-01-24 15:21 AEDT (UT..."
+[15:21:16] [co] ○ gemini-2.5-pro                                  1/20
+[15:21:32] [co] ● gemini-2.5-pro · 2.0k tok · $0.0042                  ⚡ 16.9s
+[15:21:32] [co] ═══════════════════════════════════════════════
+[15:21:32] [co] [OK] complete · 2.0k tokens · $0.0042 · 16.9s
+[15:21:32] [co]   .co/evals/user_input_pte_wfd_user_input_system_state_2026.yaml
+[15:21:47] [co] > "<User_Input>
+确认
+</User_Input>
+
+<System_State>
+当前时间：2026-01-24 15:21 AEDT (UTC+1100)
+计划读取失败：未找到计划文件：/..."
+[15:21:47] [co] ○ gemini-2.5-pro                                  1/20
+[15:22:11] [co] ● gemini-2.5-pro · 1 tool · 2.3k tok · $0.0069        ⚡ 24.1s
+[15:22:12] [co]   ▸ create_daily_plan(tasks="          [OK] 0.00s
+[15:22:12] [co] ○ gemini-2.5-pro                                  2/20
+[15:22:19] [co] ● gemini-2.5-pro · 2.3k tok · $0.0031                  ⚡ 7.8s
+[15:22:19] [co] ═══════════════════════════════════════════════
+[15:22:19] [co] [OK] complete · 6.6k tokens · $0.014 · 32.0s
+[15:22:19] [co]   .co/evals/user_input_pte_wfd_user_input_system_state_2026.yaml
+
+============================================================
+Session started: 2026-01-24 22:34:03
+============================================================
+
+
+  ○
+ ◎    planner_agent_v2
+●     ────────────────────
+      connectonion v0.6.0
+      gemini-2.5-pro · 8 tools
+      .co/logs/ · .co/sessions/
+      credits on me, go build —aaron
+      ────────────────────
+
+
+============================================================
+Session started: 2026-01-26 23:32:02
+============================================================
+
+
+  ○
+ ◎    planner_agent_v2
+●     ────────────────────
+      connectonion v0.6.2
+      gemini-2.5-pro · 8 tools
+      .co/logs/ · .co/evals/
+      credits on me, go build —aaron
+      ────────────────────
+
+[23:52:23] [co] > "<User_Input>
+今天有什么安排
+</User_Input>
+
+<System_State>
+当前时间：2026-01-26 23:52 AEDT (UTC+1100)
+计划读取失败：未找到计..."
+[23:52:23] [co] ○ gemini-2.5-pro                                  1/20
+[23:52:31] [co] ● gemini-2.5-pro · 1.8k tok · $0.0030                  ⚡ 7.8s
+[23:52:31] [co] ═══════════════════════════════════════════════
+[23:52:31] [co] [OK] complete · 1.8k tokens · $0.0030 · 7.8s
+[23:52:31] [co]   .co/evals/user_input_user_input_system_state_2026_01_26_23.yaml
