@@ -1,6 +1,4 @@
-Here is the translation of your README into clear, easy-to-understand English, formatted as Markdown.
 
----
 
 # ADHD Timebox Agent
 
