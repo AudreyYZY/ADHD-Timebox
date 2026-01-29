@@ -1,0 +1,217 @@
+INFO:     Started server process [60345]
+INFO:     Waiting for application startup.
+
+  ○
+ ◎    planner_agent_v2
+●     ────────────────────
+      connectonion v0.6.2
+      gemini-2.5-pro · 8 tools
+      .co/logs/ · .co/evals/
+      credits on me, go build —aaron
+      ────────────────────
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57696 - "GET /api/health HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:57848 - "POST /api/chat HTTP/1.1" 200 OK
+我是 OrchestratorAgent，一个负责分类和分发指令的中央中枢。请告诉我你的想法或下一步行动。
+INFO:     127.0.0.1:57946 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+我下一步想吃饭
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:30 CST (UTC+0800)
+计划读取失败：未找到计划..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 1.8k tok · $0.0030                  ⚡ 17.1s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 1.8k tokens · $0.0030 · 17.1s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 308秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 307秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [系统路由] 正在转接至 PLANNER... 理由：安排下一步活动
+好的，现在是 2026-01-29 23:30。夜深了，我们先安排吃饭补充能量。
+
+我为你规划了接下来的用餐时间，你看这样可以吗？
+
+- **23:30 - 00:00 用餐**
+
+如果没问题，我就为你写入今天的计划。
+INFO:     127.0.0.1:61545 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+哈哈 你输了
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:35 CST (UTC+0800)
+计划读取失败：未找到计划文..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 1.9k tok · $0.0028                  ⚡ 16.9s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 3.7k tokens · $0.0058 · 16.9s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+哈哈，你赢啦！😉
+
+作为你的时间管家，我的核心任务是帮你理清头绪。如果你想继续，我们随时可以把“享用夜宵”这个任务安排进日程。
+
+需要现在就为你规划吗？
+INFO:     127.0.0.1:62451 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+嘿嘿
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:35 CST (UTC+0800)
+计划读取失败：未找到计划文件：/U..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.0k tok · $0.0028                  ⚡ 9.7s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 5.8k tokens · $0.0086 · 9.7s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+现在是 2026-01-29 23:35，今天马上就要过去了。
+
+需要我们开始规划明天的日程吗？
+INFO:     127.0.0.1:62510 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+哈哈哈
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:38 CST (UTC+0800)
+计划读取失败：未找到计划文件：/..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.1k tok · $0.0030                  ⚡ 10.0s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 7.9k tokens · $0.012 · 10.0s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+现在是 2026-01-29 23:38，今天马上就要过去了。
+
+有什么任务需要我为你安排在明天吗？我们来把它们变成清晰的时间盒吧。
+INFO:     127.0.0.1:62782 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+haha
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:48 CST (UTC+0800)
+计划读取失败：未找到计划文件：..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.2k tok · $0.0032                  ⚡ 12.0s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 10.1k tokens · $0.015 · 12.0s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 307秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+很高兴看到你心情不错！时间已经来到 2026-01-29 23:48，今天马上就要过去了。
+
+需要我为你规划一下明天吗？还是有什么其他想法？
+INFO:     127.0.0.1:64060 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+wqwqwq
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:51 CST (UTC+0800)
+计划读取失败：未找到计划文..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.3k tok · $0.0035                  ⚡ 13.9s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 12.4k tokens · $0.018 · 13.9s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+好的，现在是 2026-01-29 23:51，今天只剩下几分钟了。
+
+我们是为明天做个计划，让你一早醒来就动力满满，还是现在安排一个 15 分钟的放松时间，为今天画上句号？
+INFO:     127.0.0.1:64558 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+q
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:51 CST (UTC+0800)
+计划读取失败：未找到计划文件：/Us..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.4k tok · $0.0035                  ⚡ 9.8s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 14.9k tokens · $0.022 · 9.8s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+现在是 2026-01-29 23:51，今天马上就要过去了。
+
+还有什么需要完成的吗？或者，我们可以开始规划明天的日程，让你有一个清晰的开始。
+INFO:     127.0.0.1:64583 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+wqwqwq
+</User_Input>
+
+<System_State>
+当前时间：2026-01-29 23:53 CST (UTC+0800)
+计划读取失败：未找到计划文..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.6k tok · $0.0038                  ⚡ 16.4s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 17.4k tokens · $0.026 · 16.4s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+晚上好！现在是 23:53，我们似乎进行了一场意识流对话练习。
+
+作为你的首席时间管家，我的任务是帮你理清思绪、规划日程。如果你准备好了，可以随时告诉我明天需要处理的任务，我们可以一起为新的一天做个清爽的规划。
+INFO:     127.0.0.1:64728 - "POST /api/chat HTTP/1.1" 200 OK
