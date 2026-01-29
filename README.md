@@ -1,3 +1,240 @@
+Here is the translation of your README into clear, easy-to-understand English, formatted as Markdown.
+
+---
+
+# ADHD Timebox Agent
+
+As a developer who also has ADHD, I know the pain points of this brain type: it's not that we don't *want* to do things, but we struggle with prioritizing, getting started, and getting lost when switching tasks.
+
+To solve this, I built the **ADHD Timebox Agent** based on the **ConnectOnion framework**. This isn't just a normal To-Do List; it is a full-process execution coach based on the "Timeboxing" methodology. It doesn't just record tasks—it acts as an AI agent that takes over my "prefrontal cortex" functions: planning, supervising execution, and providing dopamine feedback.
+
+## 🚀 Quick Start
+
+### 1. Environment Setup
+
+Ensure your system has Python 3.10 or higher installed.
+
+```bash
+# Clone the repository
+git clone <repository_url>
+cd ADHD-Timebox
+
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate the virtual environment
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+
+```
+
+### 3. Configure Credentials
+
+#### Google Calendar Credentials
+
+To let the Agent manage your calendar, you need to configure the Google Calendar API:
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a project.
+2. Enable the **Google Calendar API**.
+3. Create **OAuth 2.0 Client IDs** (Desktop app).
+4. Download the JSON credential file, rename it to `credentials.json`, and place it in the project root directory.
+5. On the first run, a browser window will pop up for authorization, creating a `token.json` file automatically.
+
+#### LLM API Key
+
+This project uses the `connectonion` framework to connect to LLMs. You need to configure the API Key (e.g., Gemini, OpenAI).
+Set environment variables or create a `.env` file:
+
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+# OR
+export OPENAI_API_KEY="your_api_key_here"
+
+```
+
+*(The specific model is configured as `co/gemini-2.5-pro` in `backend/main.py`. Ensure you have access or change it to another model in the code).*
+
+### 4. Start the Agent
+
+#### Multi-Agent System (MAS)
+
+This mode includes the full "Plan-Monitor-Reward" loop.
+
+```bash
+python backend/main_mas.py
+
+```
+
+**Features**:
+
+* **Orchestrator**: The central router. It identifies if you need to plan, start focusing, or if you have a sudden distracting thought.
+* **Focus Agent**: Your companion during deep work. It detects if you are getting distracted.
+* **Idle Watcher**: (Requires permissions) Monitors computer idle status to remind you to return to the task.
+* **Parking Lot**: A "Save for later" feature. It stores distracting thoughts so they don't break your current flow.
+
+## 📂 Directory Structure
+
+* `backend/adhd_brain/`: The Agent's "Brain". Stores memories, logs, and generated plan files.
+* `backend/agents/`: Code for each specific agent (Focus, Planner, Reward, etc.).
+* `backend/tools/`: Utility tools (Calendar tools, idle detection, etc.).
+* `backend/main_mas.py`: Entry point for the Multi-Agent mode.
+
+## ❓ FAQ
+
+**Q: `ModuleNotFoundError: No module named 'connectonion'`?**
+A: Make sure you activated your virtual environment and ran `pip install -r requirements.txt`.
+
+**Q: Calendar isn't syncing?**
+A: Check if `credentials.json` exists. On the first run, you must manually authorize it in the browser.
+
+**Q: How do I change the AI model?**
+A: Open `backend/main_mas.py` (or the specific agent file), find `model="co/gemini-2.5-pro"`, and change it to a model name supported by `connectonion` (e.g., `gpt-4o`, `claude-3-5-sonnet`).
+
+---
+
+# ADHD-Timebox: Project Details
+
+### I. Introduction
+
+**ADHD Timebox Agent** is an AI assistant designed to help people with ADHD effectively use the **Timeboxing** method. It addresses common ADHD problems like "difficulty prioritizing," "trouble starting," "time blindness," and "interrupted execution." It lowers cognitive load to help users enter and stay in a "Flow State."
+
+### II. What is Timeboxing?
+
+##### 1. Core Definition
+
+**Timeboxing** is a method where you lock a single task into a **specific time slot**.
+It’s not just a list; it **binds a task to a specific time**. Crucially, you **must produce a result within that time**. It’s like locking a task in a box: you define the start and end time, and **you only do that one thing inside the box**.
+
+*(Elon Musk reportedly uses timeboxing to achieve 8x the workload of an average person).*
+
+##### 2. How to Execute?
+
+**Step 1: Box it (Planning Phase)**
+
+* **List it:** List all tasks before the day starts.
+* **Pick the best:** Select only the **top 3-5 most important tasks**. Don't try to do everything.
+* **Set time:** Put them on the calendar with clear start/end times (e.g., 15, 30, or 60 minutes).
+
+**Step 2: Close the Box (Execution Phase)**
+
+* **Start on time:** Even if you don't want to, start at the scheduled minute. Even a micro-action (like opening a document) counts.
+* **Single Core:** Remove phones/distractions. Focus on one thing. Do not question the plan; just execute.
+
+**Step 3: Open the Box (Review Phase)**
+
+* **Stop on time:** When time is up, stop. Don't chase perfection; aim for "acceptable."
+* **Celebrate:** Cross it off the list or eat a snack. Give your brain positive feedback.
+
+##### 3. Core Rules
+
+1. **Use Verbs:** "Write Report" (not just "Report").
+2. **Imperfect is fine:** The goal is "Done," not "Perfect."
+3. **Trust the Box:** Don't waste energy wondering "Is this the right thing to do?" Just do it.
+4. **Box your Rest:** Rest is for recovery. Schedule 5-10 minute "Rest Boxes."
+5. **Break it down:**
+* Huge task -> Break into steps (e.g., "Annual Report" becomes "Gather Data," "Analyze," "Write Summary").
+* Tiny tasks -> Group them together (e.g., "Reply to emails" + "File sorting" = one box).
+
+
+
+##### 4. Why it works
+
+* **Fights Parkinson's Law:** Work expands to fill the time available. Limits force efficiency.
+* **Saves Brain Power:** You plan once, so you don't have to make decisions all day.
+* **Control:** You aren't pushed by events; you control your time.
+
+---
+
+### III. Design Philosophy & Core Decisions
+
+Every design decision in the **ADHD Timebox Agent** is based on the science of Timeboxing. For an ADHD brain, simply "making a list" often fails. The system uses a **Multi-Agent Collaboration Architecture**:
+
+#### 1. Orchestrator Agent (The Boss)
+
+**Role:** The system's brain and router.
+
+* **Intent Recognition:** Listens to what you say and sends you to the right Agent (Plan, Focus, or Reward).
+* **Agent Lock:** When a specific Agent (like the Planner) is doing a complex job, the Orchestrator "locks" the conversation to that Agent so the context doesn't get lost.
+
+#### 2. Plan Agent (The Organizer)
+
+**Role:** Your external "Prefrontal Cortex."
+
+* **List to Timebox:** You just dump your messy thoughts ("Write code, learn English, buy groceries"). The Agent organizes them into 15/30/60 minute boxes.
+* **Task Shaping:**
+* Turns nouns into Verbs.
+* Breaks big tasks down and merges small tasks.
+* **Syncs directly to Google Calendar.**
+
+
+* **Dynamic Rescheduling:** If you say "Push everything back 30 minutes," it automatically adjusts your whole schedule so you don't feel like you failed.
+
+#### 3. Focus Agent (The Guardian)
+
+**Role:** Protects your Flow State.
+
+* **Micro-steps:** If you are procrastinating, it suggests tiny steps (e.g., "Just open the file") to bypass anxiety.
+* **Thought Parking Lot:** If you suddenly think "I need to check if my camera fits in my bag," the Agent searches for you or saves the note *without* you leaving your work window.
+* **Distraction Detection:** Monitors your mouse/keyboard. If you are idle for 5 minutes, it gently reminds you to come back.
+
+#### 4. Reward Agent ( The Cheerleader)
+
+**Role:** Provides Dopamine.
+
+* **Instant Feedback:** Celebrates when you finish a task.
+* **Visuals:** Generates fun ASCII art (like cows or animals) to give you a sense of achievement.
+
+---
+
+### IV. Technical Challenges & Solutions
+
+#### 1. From "God Prompt" to Multi-Agent
+
+*Challenge:* Originally, one giant prompt tried to do everything. It was expensive and fragile.
+*Solution:* Split into **Orchestrator, Plan, Focus, and Reward**. Each agent is small, specialized, and easier to manage.
+
+#### 2. From Agents to Tools
+
+*Challenge:* Switching to a separate "Note-taking Agent" just to write down a thought was too slow and broke the user's focus.
+*Solution:* I turned features into **Tools**. Now, the Focus Agent can use a "Parking Lot Tool" to save a note without leaving the conversation.
+
+#### 3. Fixing Context Drift (State Machine)
+
+*Challenge:* In long conversations, the main Orchestrator would forget who you were talking to (e.g., thinking "9:00 PM" was a new command rather than an answer to the Planner).
+*Solution:* Implemented a **Sticky Session / Lock Mechanism**. If the Planner asks a question, the Orchestrator forces the next reply to go back to the Planner, ignoring other logic until the task is done.
+
+#### 4. The "Amnesia" Problem
+
+*Challenge:* When the program restarted, the Agent forgot the plan it just made.
+*Solution:* **State Injection.** Before every message, the code reads the current schedule from the disk and "injects" it into the Agent's prompt. The Agent always knows the real-time status of your day.
+
+#### 5. Adding Long-Term Memory
+
+*Challenge:* The system could remember tasks, but not *user preferences* (e.g., "I get tired at 2 PM").
+*Solution:* Added **ConnectOnion Memory**. Now, the Plan Agent can leave a "sticky note" for the Focus Agent saying: *"User is stressed today, be gentle."* The system learns your habits over time.
+
+---
+
+### V. Summary
+
+The **ADHD Timebox Agent** uses the power of ConnectOnion's Memory and Multi-Agent orchestration to turn a mechanical schedule into a smart, empathetic partner. It has memory, intuition, and helps my brain function better.
+
+
+
+
+---
+---
+
+
 # ADHD Timebox Agent
 
 作为一个开发者，同时也是 ADHD 人群的一员，我深知这种大脑的痛点：并非不想做，而是优先级混乱、启动困难以及极易在任务切换中迷失。
