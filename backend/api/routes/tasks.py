@@ -46,17 +46,17 @@ def _normalize_task(task: dict) -> dict:
 @router.get("/api/tasks")
 async def list_tasks(date: Optional[str] = Query(None), state=Depends(get_app_state)):
     if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
 
     today = datetime.date.today()
     plan_manager = state.orchestrator.plan_manager
     plan_date, date_err = plan_manager._parse_plan_date(date, today)
     if date_err:
-        return error_response(400, "INVALID_DATE", "日期格式错误", date_err)
+        return error_response(400, "INVALID_DATE", "Invalid date format", date_err)
 
     tasks, path, err = plan_manager._load_tasks(plan_date.isoformat(), False)
     if err:
-        return error_response(404, "PLAN_NOT_FOUND", "未找到计划文件", err)
+        return error_response(404, "PLAN_NOT_FOUND", "Plan file not found", err)
 
     tasks = tasks or []
     normalized = [_normalize_task(t) for t in tasks if isinstance(t, dict)]
@@ -80,26 +80,26 @@ async def update_task(
     state=Depends(get_app_state),
 ):
     if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
 
     if not payload.status:
-        return error_response(400, "INVALID_STATUS", "status 不能为空")
+        return error_response(400, "INVALID_STATUS", "status cannot be empty")
 
     plan_manager = state.orchestrator.plan_manager
     today = datetime.date.today()
     plan_date, date_err = plan_manager._parse_plan_date(date, today)
     if date_err:
-        return error_response(400, "INVALID_DATE", "日期格式错误", date_err)
+        return error_response(400, "INVALID_DATE", "Invalid date format", date_err)
 
     tasks, path, err = plan_manager._load_tasks(plan_date.isoformat(), False)
     if err:
-        return error_response(404, "PLAN_NOT_FOUND", "未找到计划文件", err)
+        return error_response(404, "PLAN_NOT_FOUND", "Plan file not found", err)
     if tasks is None:
-        return error_response(500, "PLAN_INVALID", "计划文件格式异常", path)
+        return error_response(500, "PLAN_INVALID", "Invalid plan file format", path)
 
     target = plan_manager._find_task(tasks, task_id)
     if not target:
-        return error_response(404, "TASK_NOT_FOUND", "未找到任务", task_id)
+        return error_response(404, "TASK_NOT_FOUND", "Task not found", task_id)
 
     status = payload.status.strip().lower()
     target["status"] = status
@@ -108,7 +108,7 @@ async def update_task(
 
     write_err = plan_manager._write_tasks(path, tasks)
     if write_err:
-        return error_response(500, "WRITE_FAILED", "写入失败", write_err)
+        return error_response(500, "WRITE_FAILED", "Write failed", write_err)
 
     reward = None
     if status in {"done", "completed", "complete"}:

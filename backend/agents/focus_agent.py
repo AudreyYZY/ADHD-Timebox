@@ -1,4 +1,4 @@
-"""Focus Agent (v3) — 防上下文漂移的执行教练。"""
+"""Focus Agent (v3) — keeps focus and prevents context drift."""
 
 import datetime
 import os
@@ -28,7 +28,7 @@ except Exception as e:
 
 
 class FocusAgent:
-    """负责执行阶段的上下文锚定与轻量引导。"""
+    """Anchor execution-stage context and provide lightweight guidance."""
 
     def __init__(
         self,
@@ -69,7 +69,7 @@ class FocusAgent:
         )
 
     def handle(self, user_input: str) -> dict:
-        """单轮对话入口，强制注入 System Context 以防漂移。"""
+        """Single-turn entrypoint; inject System Context to avoid drift."""
         idle_alert = user_input.strip().startswith("[IDLE_ALERT]")
         routine_check = user_input.strip().startswith("[ROUTINE_CHECK]")
 
@@ -79,7 +79,7 @@ class FocusAgent:
         try:
             raw = self.agent.input(payload)
         except Exception as exc:
-            return {"content": f"[FocusAgent 错误] {exc}", "status": STATUS_FINISHED}
+            return {"content": f"[FocusAgent Error] {exc}", "status": STATUS_FINISHED}
 
         if not isinstance(raw, str):
             return {"content": str(raw), "status": STATUS_FINISHED}
@@ -94,8 +94,8 @@ class FocusAgent:
             content = raw.strip()
             status = STATUS_CONTINUE
 
-        # 系统级主动提醒（Idle Alert / Routine Check）通常是一次性的，
-        # 发送完提醒后，我们认为这一轮交互结束，等待用户的新输入。
+        # System-triggered alerts (Idle Alert / Routine Check) are single-shot;
+        # after sending, we consider this turn finished and wait for user input.
         if idle_alert or routine_check:
             status = STATUS_FINISHED
 
@@ -103,7 +103,7 @@ class FocusAgent:
 
     __call__ = handle
 
-    # -- 内部方法 --
+    # -- Internal methods --
 
     def _build_payload(self, user_input: str) -> str:
         context_block = self._render_context_block()
@@ -127,7 +127,7 @@ class FocusAgent:
             start = active_task.get("start") or "-"
             end = active_task.get("end") or "-"
             remaining = active_task.get("remaining_minutes")
-            plan_path = focus_state.get("plan_path") or "未找到"
+            plan_path = focus_state.get("plan_path") or "not found"
             progress = focus_state.get("progress") or {}
             done = progress.get("done", 0)
             total = progress.get("total", 0)

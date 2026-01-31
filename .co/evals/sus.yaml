@@ -1,0 +1,14 @@
+name: sus
+created: '2026-01-31 10:07:52'
+updated: '2026-01-31 10:07:52'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: sus
+  run: 1
+  output: 'REPLY: 无法识别您的意图，请提供更明确的指令。'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 416, "cost": 0.0007, "duration_ms": 11294, "ts": "2026-01-31 10:07:52"}'
+  history: []

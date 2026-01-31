@@ -19,7 +19,7 @@ class IdleWatcher:
         idle_threshold_seconds: int = 300,
         cooldown_seconds: int = 600,
         focus_only: bool = True,
-        routine_check_seconds: int = 300,  # 新增：每 5 分钟主动检查一次上下文
+        routine_check_seconds: int = 300,  # proactive context check every 5 minutes
     ):
         self.context_tool = context_tool or ContextTool()
         self.on_idle = on_idle
@@ -56,24 +56,26 @@ class IdleWatcher:
             try:
                 self._maybe_fire()
             except Exception as exc:
-                print(f"[IdleWatcher] 检测失败：{exc}")
+                print(f"[IdleWatcher] Check failed: {exc}")
             self._stop_event.wait(self.interval_seconds)
 
     def _maybe_fire(self):
         now_ts = time.time()
         
-        # 1. 常规上下文检查 (Routine Check) - 针对“勤奋的走神”
+        # 1) Routine context check (covers "active distraction")
         if self.routine_check_seconds > 0:
             if now_ts - self._last_routine_check_ts >= self.routine_check_seconds:
                 self._fire_event("routine_check", 0)
                 self._last_routine_check_ts = now_ts
-                # Routine check 不影响 idle alert 的冷却，它们是独立的
+                # Routine check does not affect idle alert cooldown
 
-        # 2. 空闲检测 (Idle Alert) - 针对“人不在了/发呆”
+        # 2) Idle alert - user inactive
         idle_seconds = self.context_tool.get_idle_seconds()
         if idle_seconds is None:
             if not self._warned_idle_unavailable:
-                print("[IdleWatcher] 无法读取系统空闲时间（可能不是 macOS / ioreg 不可用）。")
+                print(
+                    "[IdleWatcher] Unable to read system idle time (not macOS or ioreg unavailable)."
+                )
                 self._warned_idle_unavailable = True
             return
 
@@ -91,9 +93,11 @@ class IdleWatcher:
             if not isinstance(focus_state, dict):
                 return
             if focus_state.get("status") != "current":
-                # 即使检测到空闲，如果不在专注任务中，也不打扰
-                # 为了调试可见性，打印一条淡出的日志
-                print(f"\n[IdleWatcher] 检测到空闲 {idle_seconds}秒，但当前非专注时间 (Status={focus_state.get('status')})，不予打扰。")
+                # If not in focus mode, do not interrupt.
+                print(
+                    f"\n[IdleWatcher] Idle for {idle_seconds}s, but not in focus mode "
+                    f"(Status={focus_state.get('status')}); skipping."
+                )
                 return
 
         active_window = self.context_tool.get_active_window()
@@ -109,4 +113,4 @@ class IdleWatcher:
             try:
                 self.on_idle(payload)
             except Exception as exc:
-                print(f"[IdleWatcher] on_idle 处理失败：{exc}")
+                print(f"[IdleWatcher] on_idle failed: {exc}")

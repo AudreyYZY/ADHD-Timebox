@@ -28,7 +28,7 @@ def _base_url() -> str:
 def _api_key() -> str:
     api_key = os.getenv("OPENONION_API_KEY")
     if not api_key:
-        raise OAuthError("OPENONION_API_KEY 未配置")
+        raise OAuthError("OPENONION_API_KEY is not set")
     return api_key
 
 
@@ -46,14 +46,14 @@ def _request_json(method: str, path: str, payload: Optional[dict] = None) -> Dic
             body = resp.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="ignore")
-        raise OAuthError(f"OpenOnion 请求失败: {exc.code} {body}")
+        raise OAuthError(f"OpenOnion request failed: {exc.code} {body}")
     except urllib.error.URLError as exc:
-        raise OAuthError(f"OpenOnion 网络错误: {exc.reason}")
+        raise OAuthError(f"OpenOnion network error: {exc.reason}")
 
     try:
         return json.loads(body)
     except json.JSONDecodeError as exc:
-        raise OAuthError(f"OpenOnion 响应无法解析: {exc}")
+        raise OAuthError(f"OpenOnion response parse failed: {exc}")
 
 
 def init_google_oauth() -> Dict[str, Any]:

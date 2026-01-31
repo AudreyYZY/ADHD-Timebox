@@ -29,7 +29,7 @@ def _format_sse(event: Dict[str, Any]) -> str:
 @router.get("/api/events")
 async def sse_events(request: Request, state=Depends(get_app_state)):
     if state.event_queue is None:
-        return error_response(503, "SERVICE_NOT_READY", "事件队列未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Event queue not ready")
 
     heartbeat_interval = 30
 

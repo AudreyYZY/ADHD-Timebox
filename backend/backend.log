@@ -215,3 +215,768 @@ wqwqwq
 
 作为你的首席时间管家，我的任务是帮你理清思绪、规划日程。如果你准备好了，可以随时告诉我明天需要处理的任务，我们可以一起为新的一天做个清爽的规划。
 INFO:     127.0.0.1:64728 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+hi
+</User_Input>
+
+<System_State>
+当前时间：2026-01-30 23:20 CST (UTC+0800)
+计划读取失败：未找到计划文件：/U..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.6k tok · $0.0037                  ⚡ 5.0s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 20.1k tokens · $0.029 · 5.1s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 306秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 317秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 377秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 407秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 467秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 497秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 587秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 647秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 677秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 768秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 798秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 888秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 918秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 948秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1098秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1158秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1189秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 308秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 338秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 368秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 428秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 488秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 518秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 609秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 639秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 699秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 759秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 789秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 879秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 939秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 999秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1030秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1090秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1120秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1180秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 318秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 679秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 425秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 696秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 300秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 301秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 692秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1293秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 316秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 316秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 307秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 317秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 327秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 322秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 328秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 688秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 327秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 928秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1529秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 2130秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 2731秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 3332秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 3933秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 4534秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 323秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 319秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 311秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 301秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 692秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 722秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 932秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 962秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1022秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1203秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1263秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1293秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1533秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 317秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 328秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 312秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 314秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+你好！今天是 2026年1月30日，当前时间是 23:20。
+
+准备好一起规划你的一天了吗？有什么任务想交给我处理？
+INFO:     127.0.0.1:55531 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+shit
+</User_Input>
+
+<System_State>
+当前时间：2026-01-30 23:20 CST (UTC+0800)
+计划读取失败：未找到计划文件：..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.8k tok · $0.0041                  ⚡ 11.9s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 22.8k tokens · $0.033 · 11.9s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+晚上好，当前是 2026-01-30 23:20。
+
+看起来有些不顺心？没关系，无论今天发生了什么，我们都可以为明天做一个清晰的规划，重新掌握主动权。
+
+需要我为你安排些什么，或者直接规划一个放松的休息时间吗？
+INFO:     127.0.0.1:55629 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+masturbate
+</User_Input>
+
+<System_State>
+当前时间：2026-01-30 23:39 CST (UTC+0800)
+计划读取失败：未找..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 2.8k tok · $0.0036                  ⚡ 4.7s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 25.6k tokens · $0.037 · 4.7s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 319秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+我无法处理这类内容，请换个话题吧。
+INFO:     127.0.0.1:58955 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+i want eat sleep study today
+</User_Input>
+
+<System_State>
+当前时间：2026-01-31 00:17 CST (U..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 3.2k tok · $0.0069                  ⚡ 19.0s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 28.9k tokens · $0.044 · 19.0s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 326秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=no_plan)，不予打扰。
+>> [会话锁] 直接转接至已锁定 Agent ...
+好的，我们来把这些想法变成今天可执行的计划！
+
+现在是 **2026年1月31日 00:17**，今天还有一整天的时间可以规划。根据你的输入“eat, sleep, study”，我为你编排了一份专注与休息平衡的时间表：
+
+- **上午 (专注学习):**
+    - **09:00 - 10:00**: 进行深度学习 (第1部分)
+    - **10:00 - 10:15**: 短暂休息
+    - **10:15 - 11:15**: 进行深度学习 (第2部分)
+- **中午 (补充能量):**
+    - **12:00 - 13:00**: 享用午餐
+- **下午 (巩固复习):**
+    - **14:00 - 15:00**: 复习与总结
+    - **15:00 - 15:15**: 下午茶与小憩
+- **晚上 (放松与收尾):**
+    - **18:00 - 19:00**: 享用晚餐
+    - **22:00 - 22:30**: 为明天做准备并放松
+    - **22:30 onwards**: 准备入睡
+
+你觉得这个安排怎么样？如果同意，我就为你创建今天的计划并同步到日历。
+INFO:     127.0.0.1:50569 - "POST /api/chat HTTP/1.1" 200 OK
+
+[co] > "<User_Input>
+ok
+</User_Input>
+
+<System_State>
+当前时间：2026-01-31 00:17 CST (UTC+0800)
+计划读取失败：未找到计划文件：/U..."
+
+[co] ○ gemini-2.5-pro                                  1/20
+[co] ● gemini-2.5-pro · 1 tool · 3.3k tok · $0.0064        ⚡ 20.6s
+[co]   ▸ create_daily_plan(tasks="[{"t...", target_date="2026...") ✓ 0.03s
+[co] ○ gemini-2.5-pro                                  2/20
+[co] ● gemini-2.5-pro · 3.3k tok · $0.0044                  ⚡ 7.0s
+
+[co] ═══════════════════════════════════════════════
+[co] ✓ complete · 35.5k tokens · $0.055 · 27.6s
+[co]   .co/evals/user_input_user_input_system_state_2026_01_29_23.yaml
+
+>> [会话锁] 直接转接至已锁定 Agent ...
+好的，计划已为你安排并同步到日历。请按计划执行，祝你专注高效！
+INFO:     127.0.0.1:50712 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:55025 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:55306 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:55413 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:59449 - "POST /api/chat HTTP/1.1" 200 OK
+收到。请告诉我下一步行动。
+INFO:     127.0.0.1:61099 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:62500 - "POST /api/chat HTTP/1.1" 200 OK
+我没有理解，请再说一遍。
+INFO:     127.0.0.1:62845 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:62959 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:65477 - "POST /api/chat HTTP/1.1" 200 OK
+无法识别您的指令。请告诉我下一步行动。
+INFO:     127.0.0.1:65477 - "POST /api/chat HTTP/1.1" 200 OK
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 322秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 352秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 382秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 442秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 472秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 502秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 562秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 592秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 652秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 683秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 743秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 803秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 833秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 863秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 923秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1013秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1043秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1103秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1193秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1224秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1284秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1314秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1374秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1434秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1464秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1554秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 1614秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+无法识别您的意图，请提供更明确的指令。
+INFO:     127.0.0.1:64230 - "POST /api/chat HTTP/1.1" 200 OK
+Okay, I will now communicate in English. How can I help you?
+INFO:     127.0.0.1:64715 - "POST /api/chat HTTP/1.1" 200 OK
+Understood. I will use English in all communications. How can I assist you?
+INFO:     127.0.0.1:64837 - "POST /api/chat HTTP/1.1" 200 OK
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:65492 - "POST /api/chat HTTP/1.1" 200 OK
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+
+[IdleWatcher] 检测到空闲 0秒，但当前非专注时间 (Status=upcoming)，不予打扰。
+你好！我是你的中枢，请告诉我下一步行动。
+INFO:     127.0.0.1:51337 - "POST /api/chat HTTP/1.1" 200 OK

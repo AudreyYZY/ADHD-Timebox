@@ -1,0 +1,462 @@
+name: system_context_current_time_2026_01_31_00_19_cst
+created: '2026-01-31 00:20:08'
+updated: '2026-01-31 02:32:13'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:19 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 70
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 1818, "cost": 0.0023, "duration_ms": 19479, "ts": "2026-01-31
+    00:20:08"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:25 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 64
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 3784, "cost": 0.0048, "duration_ms": 7706, "ts": "2026-01-31 00:25:20"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:30 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 59
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 5898, "cost": 0.0075, "duration_ms": 4072, "ts": "2026-01-31 00:30:29"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:35 CST
+
+    Active Window: WeChat - WeChat (Contacts)
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 54
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Contacts)」，请问这属于「深度学习」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 8193, "cost": 0.0107, "duration_ms": 11233, "ts": "2026-01-31
+    00:35:44"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:40 CST
+
+    Active Window: WeChat - WeChat (Chats)
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 49
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：WeChat - WeChat (Chats)。当前任务：深度学习'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Chats)」，请问这属于「深度学习」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 10637, "cost": 0.014, "duration_ms": 7447, "ts": "2026-01-31 00:40:53"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:45 CST
+
+    Active Window: WeChat - WeChat (Chats)
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 44
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：WeChat - WeChat (Chats)。当前任务：深度学习'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Chats)」，请问这属于「深度学习」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 13230, "cost": 0.0176, "duration_ms": 9062, "ts": "2026-01-31
+    00:46:03"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:51 CST
+
+    Active Window: WeChat - WeChat (Chats)
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 38
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：WeChat - WeChat (Chats)。当前任务：深度学习'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Chats)」，请问这属于「深度学习」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 15972, "cost": 0.0214, "duration_ms": 14113, "ts": "2026-01-31
+    00:51:18"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 00:56 CST
+
+    Active Window: WeChat - WeChat (Chats)
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 33
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：WeChat - WeChat (Chats)。当前任务：深度学习'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Chats)」，请问这属于「深度学习」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 18863, "cost": 0.0253, "duration_ms": 8009, "ts": "2026-01-31
+    00:56:27"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:01 CST
+
+    Active Window: Google Chrome - ADHD Timebox Assistant
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 28
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：Google Chrome - ADHD Timebox Assistant。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 21872, "cost": 0.0291, "duration_ms": 6957, "ts": "2026-01-31
+    01:01:35"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:06 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 23
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 25029, "cost": 0.0331, "duration_ms": 9124, "ts": "2026-01-31
+    01:06:49"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:11 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 18
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 28334, "cost": 0.0372, "duration_ms": 9903, "ts": "2026-01-31
+    01:12:03"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:22 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 7
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 31937, "cost": 0.0418, "duration_ms": 8139, "ts": "2026-01-31
+    01:22:23"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:27 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=current
+
+    Remaining Minutes: 2
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：深度学习'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 35687, "cost": 0.0465, "duration_ms": 6669, "ts": "2026-01-31
+    01:27:34"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 01:47 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 准备夜宵和用餐
+
+    Task Window: 01:45 - 02:15 | Status=current
+
+    Remaining Minutes: 27
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：准备夜宵和用餐'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 39591, "cost": 0.0514, "duration_ms": 7268, "ts": "2026-01-31
+    01:47:12"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 02:03 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 准备夜宵和用餐
+
+    Task Window: 01:45 - 02:15 | Status=current
+
+    Remaining Minutes: 11
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：准备夜宵和用餐'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 43649, "cost": 0.0565, "duration_ms": 7175, "ts": "2026-01-31
+    02:03:19"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 02:15 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 洗漱并准备入睡
+
+    Task Window: 02:15 - 02:45 | Status=current
+
+    Remaining Minutes: 29
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：洗漱并准备入睡'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 47862, "cost": 0.0618, "duration_ms": 7554, "ts": "2026-01-31
+    02:16:06"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 02:32 CST
+
+    Active Window: 前台窗口查询超时。
+
+    Active Task: 洗漱并准备入睡
+
+    Task Window: 02:15 - 02:45 | Status=current
+
+    Remaining Minutes: 12
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/4
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：前台窗口查询超时。。当前任务：洗漱并准备入睡'
+  run: 1
+  output: <<SILENCE>>
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 52230, "cost": 0.0673, "duration_ms": 7806, "ts": "2026-01-31
+    02:32:13"}'
+  history: []

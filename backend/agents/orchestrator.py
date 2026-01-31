@@ -15,54 +15,55 @@ from tools.plan_tools_v2 import PlanManager
 
 
 SYSTEM_PROMPT = """
-你是 OrchestratorAgent，多智能体系统的中央路由中枢。
-你的任务是极其冷静、客观地分类用户的意图。
+You are OrchestratorAgent, the central routing hub of a multi-agent system.
+Your job is to calmly and objectively classify the user's intent.
+All replies must be in English, even if the user writes in another language.
 
-### 路由规则：
-1. **PLANNER (计划管家)**
-   - 关键词：日程、时间、推迟、提前、安排、计划、明天干嘛、今天有什么。
-   - 例子："推迟 10 分钟"、"把会议改到下午"、"今天还有什么事"。
+### Routing rules:
+1. **PLANNER (schedule manager)**
+   - Keywords: schedule, time, delay, move, plan, tomorrow, today, calendar.
+   - Examples: "delay 10 minutes", "move the meeting to the afternoon", "what's left today?"
 
-2. **FOCUS (执行教练)**
-   - 关键词：开始、做完了、卡住了、不想做、分心了、正在做。
-   - 例子："开始第一项任务"、"我做完了"、"这太难了"、"我走神了"。
+2. **FOCUS (execution coach)**
+   - Keywords: start, finished, stuck, don't want to, distracted, working on.
+   - Examples: "start the first task", "I finished it", "this is too hard", "I'm distracted".
 
-3. **PARKING (念头停车场)**
-   - 关键词：搜索、查一下、想到一个点子、记录、我想知道。
-   - 例子："查一下 Python 的这个用法"、"突然想到要去买牛奶"、"把这个记下来"。
+3. **PARKING (thought parking)**
+   - Keywords: search, look up, remember, idea, note, I want to know.
+   - Examples: "look up this Python usage", "I just remembered to buy milk", "note this down".
 
-### 输出格式（严格遵守）：
-- 确认为上述意图时 -> CALL: <AGENT_NAME> | <REASON>
-- 只是打招呼或无法分类时 -> REPLY: <回复内容>
+### Output format (strict):
+- If intent matches -> CALL: <AGENT_NAME> | <REASON>
+- If it's a greeting or unclear -> REPLY: <response>
 
-### 示例训练：
-User: "把现在的任务顺延 30 分钟"
-Output: CALL: PLANNER | 调整时间
+### Training examples:
+User: "delay the current task by 30 minutes"
+Output: CALL: PLANNER | time adjustment
 
-User: "我准备好开始写代码了"
-Output: CALL: FOCUS | 任务开始
+User: "I am ready to start coding"
+Output: CALL: FOCUS | task start
 
-User: "帮我查一下现在的汇率"
-Output: CALL: PARKING | 外部搜索
+User: "look up the exchange rate"
+Output: CALL: PARKING | external search
 
-User: "你好呀"
-Output: REPLY: 你好！我是你的中枢，请告诉我下一步行动。
+User: "hello"
+Output: REPLY: Hi! Tell me what you want to do next.
 
-User: "我觉得有点累，不想动"
-Output: CALL: FOCUS | 情绪干预
+User: "I'm tired and don't want to move"
+Output: CALL: FOCUS | emotional support
 """.strip()
 
 STATUS_CONTINUE = "CONTINUE"
 STATUS_FINISHED = "FINISHED"
 
 
-class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Agent
+class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
     """Front-of-house router that simulates hand-offs."""
 
     def __init__(self, plan_manager: Optional[PlanManager] = None):
-        # 全局共享记忆，供 Planner / Focus / Reward 等 Agent 读取或写入
+        # Shared memory for Planner / Focus / Reward agents.
         self.shared_memory = Memory(memory_dir="adhd_brain/long_term_memory")
-        # 预热 PlannerAgent，便于直接转接；PlanManager 提升为路由层依赖以做状态注入
+        # Warm PlannerAgent; keep PlanManager at router level for context injection.
         self.plan_manager = plan_manager or PlanManager()
         self.planner_agent = PlannerAgent(
             plan_manager=self.plan_manager, memory=self.shared_memory
@@ -75,9 +76,9 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             reward_toolkit=self.reward_agent.toolkit,
             memory=self.shared_memory,
         )
-        # 会话锁：若被占用，则后续用户输入将直接转发至锁定 Agent
+        # Session lock: if set, forward future input directly to the locked agent.
         self.locked_agent = None
-        self.escape_words = {"退出", "exit", "stop", "解锁", "终止", "结束"}
+        self.escape_words = {"exit", "stop", "unlock", "end", "quit", "terminate"}
         self.last_agent = "orchestrator"
 
     def route(self, user_input: str) -> str:
@@ -98,14 +99,14 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         # Escape hatch: force unlock
         if self.locked_agent and any(word in normalized for word in self.escape_words):
             self.locked_agent = None
-            msg = "🔓 已解除当前会话锁。"
+            msg = "🔓 Session lock released."
             self.last_agent = "orchestrator"
             print(msg)
             return msg
 
         # Fast path: locked agent consumes input directly
         if self.locked_agent:
-            print(">> [会话锁] 直接转接至已锁定 Agent ...")
+            print(">> [Session Lock] Forwarding to locked agent ...")
             envelope = self._safe_handle(self.locked_agent, user_input)
             content = envelope.get("content", "")
             self._update_lock(self.locked_agent, envelope)
@@ -114,19 +115,16 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             print(content)
             return content
 
-        # 每次请求都创建一个全新的、一次性的 Agent 实例
-        # name="orchestrator_temp" 甚至可以是随机数，确保无残留记忆
+        # Create a fresh, one-off Agent per request to avoid memory residue.
         temp_agent = Agent(
             name="orchestrator_temp",
             system_prompt=SYSTEM_PROMPT,
             model="co/gemini-2.5-pro",
             tools=[],
-            quiet=True,  # 减少不必要的日志
+            quiet=True,  # Reduce noisy logs
         )
 
-        # 强制清空可能存在的 session 文件 (如果 connectonion 在 init 时创建了)
-        # 但既然是 temp，我们更希望它不读旧文件。
-        # 如果 connectonion 强行读盘，我们需要一个随机名
+        # Force a unique name to avoid any on-disk session reuse.
         import time
 
         temp_agent.name = f"orchestrator_{int(time.time()*1000)}"
@@ -138,7 +136,7 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
             target = parts[0].replace("CALL:", "").strip().upper()
             reason = parts[1].strip() if len(parts) > 1 else ""
             print(
-                f">> [系统路由] 正在转接至 {target}...{f' 理由：{reason}' if reason else ''}"
+                f">> [Router] Handoff to {target}...{f' Reason: {reason}' if reason else ''}"
             )
 
             active_agent = None
@@ -153,11 +151,11 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
                 self.locked_agent = None
                 self.last_agent = "parking"
                 # final_result = self._maybe_attach_daily_reward(result) # Removed auto-reward
-                # 不再打印，避免调用方重复显示
+                # Do not print to avoid duplicate output by the caller
                 return result
 
             if not active_agent:
-                msg = f"暂未实现对 {target} 的处理。"
+                msg = f"Handling for {target} is not implemented yet."
                 self.locked_agent = None
                 self.last_agent = "orchestrator"
                 print(msg)
@@ -201,35 +199,35 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         return name
 
     def _safe_handle(self, agent, user_input: str) -> dict:
-        """调用目标 Agent 的 handle，并包装成信封；Planner 会自动注入 System State。"""
+        """Call target Agent.handle and wrap an envelope; Planner injects System State."""
         payload = self._build_payload(agent, user_input)
         try:
             resp = agent.handle(payload)
         except Exception as exc:
             return {
-                "content": f"[{agent.__class__.__name__} 错误] {exc}",
+                "content": f"[{agent.__class__.__name__} Error] {exc}",
                 "status": STATUS_FINISHED,
             }
         return self._normalize_envelope(resp)
 
     def _build_payload(self, agent, user_input: str) -> str:
-        """针对 Planner 注入计划上下文，其余 Agent 保持原始输入。"""
+        """Inject plan context for Planner; other agents keep raw input."""
         if isinstance(agent, PlannerAgent):
             return self._inject_plan_context(user_input)
         return user_input
 
     def _inject_plan_context(self, user_input: str) -> str:
-        """拼装用户输入与今日计划上下文，防止 Planner 忽略状态。"""
+        """Assemble user input with today's plan context."""
         try:
             context = self.plan_manager.get_current_context()
         except Exception as exc:
-            context = f"PlanManager.get_current_context 失败：{exc}"
+            context = f"PlanManager.get_current_context failed: {exc}"
 
         sanitized_input = user_input.strip()
         return f"<User_Input>\n{sanitized_input}\n</User_Input>\n\n<System_State>\n{context}\n</System_State>"
 
     def _normalize_envelope(self, resp) -> dict:
-        """确保返回包含 content/status，未改造的 Agent 默认为 FINISHED。"""
+        """Ensure envelope has content/status; legacy agents default to FINISHED."""
         if isinstance(resp, dict):
             content = resp.get("content", "")
             status = (resp.get("status") or STATUS_FINISHED).upper()
@@ -245,14 +243,10 @@ class OrchestratorAgent:  # 注意：不再继承 Agent，而是组合使用 Age
         else:
             self.locked_agent = None
 
-    # -- 奖励 / 总结钩子 ------------------------------------------------
+    # -- Reward / summary hooks -----------------------------------------
 
     def _is_finish_day_intent(self, normalized_input: str) -> bool:
         keywords = [
-            "结束",
-            "收工",
-            "收尾",
-            "总结",
             "finish day",
             "end of day",
             "today done",

@@ -24,7 +24,7 @@ def _google_status_payload() -> Dict[str, Any]:
     if not access or not refresh:
         return {
             "connected": False,
-            "message": "请点击「连接 Google 日历」完成授权",
+            "message": "Click \"Connect Google Calendar\" to authorize.",
         }
 
     try:
@@ -34,7 +34,7 @@ def _google_status_payload() -> Dict[str, Any]:
     except Exception as exc:
         return {
             "connected": False,
-            "message": "Google Calendar 未授权或不可用",
+            "message": "Google Calendar is not authorized or unavailable.",
             "detail": str(exc),
         }
 
@@ -56,11 +56,11 @@ async def auth_google():
     try:
         data = init_google_oauth()
     except OAuthError as exc:
-        return error_response(502, "OAUTH_INIT_FAILED", "OAuth 初始化失败", str(exc))
+        return error_response(502, "OAUTH_INIT_FAILED", "OAuth init failed", str(exc))
 
     auth_url = data.get("auth_url") or data.get("url")
     if not auth_url:
-        return error_response(502, "OAUTH_INIT_FAILED", "未获取到授权链接")
+        return error_response(502, "OAUTH_INIT_FAILED", "No authorization URL returned")
 
     return {
         "auth_url": auth_url,
@@ -74,7 +74,7 @@ async def auth_google_status(state=Depends(get_app_state)):
     try:
         status = poll_google_status()
     except OAuthError as exc:
-        return error_response(502, "OAUTH_STATUS_FAILED", "OAuth 状态获取失败", str(exc))
+        return error_response(502, "OAUTH_STATUS_FAILED", "OAuth status fetch failed", str(exc))
 
     status_text = status.get("status")
     connected = bool(status.get("connected")) or status_text == "connected"
@@ -83,15 +83,15 @@ async def auth_google_status(state=Depends(get_app_state)):
         if status_text in {"failed", "timeout"}:
             return {
                 "status": "failed",
-                "message": status.get("message") or "授权超时，请重试",
+                "message": status.get("message") or "Authorization timed out. Please retry.",
             }
         return {
             "status": "pending",
-            "message": status.get("message") or "等待用户在浏览器中完成授权...",
+            "message": status.get("message") or "Waiting for browser authorization...",
         }
 
     if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
 
     env_path = os.path.join(os.path.dirname(__file__), "..", "..", ".env")
     env_path = os.path.abspath(env_path)
@@ -99,12 +99,12 @@ async def auth_google_status(state=Depends(get_app_state)):
     try:
         creds = apply_google_oauth(state.orchestrator, env_path)
     except OAuthError as exc:
-        return error_response(502, "OAUTH_CREDENTIALS_FAILED", "获取凭证失败", str(exc))
+        return error_response(502, "OAUTH_CREDENTIALS_FAILED", "Failed to fetch credentials", str(exc))
     except Exception as exc:
-        return error_response(500, "OAUTH_APPLY_FAILED", "更新 Google 凭证失败", str(exc))
+        return error_response(500, "OAUTH_APPLY_FAILED", "Failed to apply Google credentials", str(exc))
 
     return {
         "status": "connected",
         "email": creds.get("google_email") or creds.get("email"),
-        "message": "Google 账号已连接",
+        "message": "Google account connected",
     }

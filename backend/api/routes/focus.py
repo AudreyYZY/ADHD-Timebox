@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/api/focus/state")
 async def focus_state(state=Depends(get_app_state)):
     if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
 
     context_tool = state.orchestrator.focus_agent.context_tool
     focus = context_tool.get_focus_state()

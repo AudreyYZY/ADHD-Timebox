@@ -1,9 +1,9 @@
-"""PlannerAgent (V2) — 核心时间管家。"""
+"""PlannerAgent (V2) — core time planner."""
 
 import os
 import warnings
 
-# 忽略 connectonion 把长 Prompt 当作文件路径的警告
+# Ignore connectonion warning about long prompts being treated as file paths.
 warnings.filterwarnings(
     "ignore", category=UserWarning, module="connectonion.core.agent"
 )
@@ -31,7 +31,7 @@ except Exception as e:
 
 
 class CalendarFallback:
-    """当 Google Calendar 未就绪时的降级实现。"""
+    """Fallback when Google Calendar is not available."""
 
     def __init__(self, reason: str):
         self.reason = reason
@@ -48,7 +48,7 @@ class CalendarFallback:
 
 
 class PlannerAgent:
-    """时间盒 Planner Agent 封装，用于多智能体路由或独立运行。"""
+    """Planner Agent wrapper for routing or standalone use."""
 
     def __init__(
         self,
@@ -61,8 +61,7 @@ class PlannerAgent:
         self.plan_manager = plan_manager or PlanManager(calendar=self.calendar)
         self.memory = memory
 
-        # 补丁：如果传入的 plan_manager 没有 calendar，手动注入
-        # 这解决了 Orchestrator 初始化 PlanManager 时未传入 Calendar 的问题
+        # Patch: inject calendar if plan_manager was constructed without one.
         if self.plan_manager.calendar is None:
             self.plan_manager.calendar = self.calendar
 
@@ -75,7 +74,7 @@ class PlannerAgent:
             model=model,
             system_prompt=PLANNER_PROMPT,
             tools=tools,
-            quiet=False,  # 开启日志以便调试工具调用
+            quiet=False,  # Enable logs for debugging tool calls
             max_iterations=20,
         )
 
@@ -87,10 +86,10 @@ class PlannerAgent:
 
     def handle(self, user_input: str) -> dict:
         """
-        单轮对话入口，返回包含 content/status 的信封。
+        Single-turn entrypoint; returns an envelope with content/status.
         status:
-        - CONTINUE: 继续持有会话锁
-        - FINISHED: 释放锁
+        - CONTINUE: keep session lock
+        - FINISHED: release lock
         """
         raw = self.agent.input(user_input)
 

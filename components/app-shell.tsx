@@ -11,7 +11,11 @@ import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
 
 export function AppShell() {
-  const { userState, hasCompletedOnboarding } = useAppStore();
+  const { userState, hasCompletedOnboarding, hasHydrated } = useAppStore();
+
+  if (!hasHydrated) {
+    return <div className="min-h-screen bg-background" aria-hidden="true" />;
+  }
 
   const renderCurrentMode = () => {
     switch (userState) {
@@ -34,7 +38,17 @@ export function AppShell() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-medium text-foreground">Timebox</span>
+            <span className="sr-only">Timebox</span>
+            <img
+              src="/icon-light-32x32.png"
+              alt=""
+              className="h-6 w-6 dark:hidden"
+            />
+            <img
+              src="/icon-dark-32x32.png"
+              alt=""
+              className="hidden h-6 w-6 dark:block"
+            />
           </div>
           <StateIndicator />
         </div>

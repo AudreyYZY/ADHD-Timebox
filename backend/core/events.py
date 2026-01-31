@@ -36,19 +36,21 @@ def build_idle_handler(
             event_type = payload.get("type", "idle_alert")
             idle_seconds = int(payload.get("idle_seconds") or 0)
             idle_minutes = max(idle_seconds // 60, 1)
-            window = payload.get("active_window") or "未知窗口"
+            window = payload.get("active_window") or "unknown window"
             focus_state = payload.get("focus_state") if isinstance(payload, dict) else {}
             active_task = (
                 focus_state.get("active_task") if isinstance(focus_state, dict) else {}
             )
-            task_title = (active_task or {}).get("title") or "当前任务"
+            task_title = (active_task or {}).get("title") or "current task"
 
             if event_type == "routine_check":
-                message = f"[ROUTINE_CHECK] 当前窗口：{window}。当前任务：{task_title}"
+                message = (
+                    f"[ROUTINE_CHECK] Active window: {window}. Active task: {task_title}"
+                )
             else:
                 message = (
-                    f"[IDLE_ALERT] 已空闲约 {idle_minutes} 分钟。"
-                    f"当前窗口：{window}。当前任务：{task_title}"
+                    f"[IDLE_ALERT] Idle for about {idle_minutes} minutes. "
+                    f"Active window: {window}. Active task: {task_title}"
                 )
 
             resp = orchestrator.focus_agent.handle(message)
@@ -71,6 +73,6 @@ def build_idle_handler(
             }
             enqueue_event(event_queue, event_loop, event)
         except Exception as exc:
-            print(f"[IdleWatcher] 推送提醒失败：{exc}")
+            print(f"[IdleWatcher] Failed to push alert: {exc}")
 
     return on_idle

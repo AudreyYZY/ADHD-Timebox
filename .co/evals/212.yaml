@@ -1,0 +1,14 @@
+name: '212'
+created: '2026-01-29 22:59:30'
+updated: '2026-01-29 22:59:30'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: '212'
+  run: 1
+  output: 'REPLY: 你好！我是你的中枢，请告诉我下一步行动。'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 417, "cost": 0.0007, "duration_ms": 10868, "ts": "2026-01-29 22:59:30"}'
+  history: []

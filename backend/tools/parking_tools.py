@@ -73,7 +73,7 @@ class ParkingService:
 
         self._append_task(task)
         self._log_to_daily(
-            f"[{now.strftime('%H:%M:%S')}] 📥 收到: {content} (from {source})"
+            f"[{now.strftime('%H:%M:%S')}] 📥 Received: {content} (from {source})"
         )
 
         if run_async and normalized_type == TaskType.SEARCH.value:
@@ -82,7 +82,7 @@ class ParkingService:
 
         preview = content[:30]
         suffix = "..." if len(content) > 30 else ""
-        return f"📥 已记录：「{preview}{suffix}」"
+        return f"📥 Logged: \"{preview}{suffix}\""
 
     def get_session_summary(self, session_id: Optional[str] = None) -> str:
         """
@@ -90,9 +90,9 @@ class ParkingService:
         """
         target_session = session_id or self._session_id
 
-        # 如果 session_id 为空，展示所有最近 session（当前简单实现仅展示全部）
+        # If session_id is missing, show the most recent session (current behavior: show all).
         if not target_session:
-            return "📭 本次专注期间没有暂存的念头。"
+            return "📭 No parked thoughts during this focus session."
 
         tasks = self._load_tasks()
         session_tasks = [
@@ -102,9 +102,9 @@ class ParkingService:
         ]
 
         if not session_tasks:
-            return "📭 本次专注期间没有暂存的念头。"
+            return "📭 No parked thoughts during this focus session."
 
-        lines = ["📋 **专注期间暂存的念头处理报告：**", ""]
+        lines = ["📋 **Focus session thought summary:**", ""]
         for task in session_tasks:
             status = task.get("status", TaskStatus.PENDING.value)
             content = task.get("content", "")[:50]
@@ -112,14 +112,14 @@ class ParkingService:
 
             if status == TaskStatus.COMPLETED.value and result:
                 tail = "..." if len(result) > 200 else ""
-                lines.append(f"✅ 「{content}」")
+                lines.append(f"✅ \"{content}\"")
                 lines.append(f"   → {result[:200]}{tail}")
             elif status == TaskStatus.PENDING.value:
-                lines.append(f"⏳ 「{content}」 - 仍在处理中")
+                lines.append(f"⏳ \"{content}\" - still processing")
             elif status == TaskStatus.FAILED.value:
-                lines.append(f"❌ 「{content}」 - 处理失败")
+                lines.append(f"❌ \"{content}\" - failed")
             else:
-                lines.append(f"📝 「{content}」 - 已记录")
+                lines.append(f"📝 \"{content}\" - logged")
             lines.append("")
 
         return "\n".join(lines).rstrip()
@@ -130,9 +130,9 @@ class ParkingService:
         pending = [t for t in tasks if t.get("status") == TaskStatus.PENDING.value]
 
         if not pending:
-            return "📭 当前没有待处理的暂存念头。"
+            return "📭 No pending parked thoughts right now."
 
-        lines = [f"📋 待处理任务 ({len(pending)} 个)："]
+        lines = [f"📋 Pending thoughts ({len(pending)}):"]
         for task in pending:
             content = task.get("content", "")[:40]
             lines.append(f"  - {content} [{task.get('type', TaskType.MEMO.value)}]")
@@ -146,7 +146,7 @@ class ParkingService:
     def end_session(self) -> str:
         """End active session and return a formatted summary."""
         if not self._session_id:
-            return "📭 本次专注期间没有暂存的念头。"
+            return "📭 No parked thoughts during this focus session."
         summary = self.get_session_summary()
         self._session_id = None
         return summary
@@ -197,7 +197,7 @@ class ParkingService:
     def _format_result_for_log(self, result: Optional[str]) -> List[str]:
         """Normalize a potentially multi-line result into concise log lines."""
         if result is None:
-            return ["(无返回结果)"]
+            return ["(no result)"]
         lines: List[str] = []
         for raw in str(result).splitlines():
             line = raw.strip()
@@ -206,7 +206,7 @@ class ParkingService:
             lines.append(line)
             if len(lines) >= 20:
                 break
-        return lines or ["(无返回结果)"]
+        return lines or ["(no result)"]
 
     def _process_task_background(self, task_id: str):
         """Execute background work for search tasks without blocking user flow."""
@@ -232,7 +232,7 @@ class ParkingService:
                 },
             )
             self._log_to_daily(
-                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ✅ 完成: {content[:30]}"
+                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ✅ Completed: {content[:30]}"
             )
             for line in self._format_result_for_log(result):
                 self._log_to_daily(f"   → {line}")
@@ -241,15 +241,15 @@ class ParkingService:
                 task_id, {"status": TaskStatus.FAILED.value, "error": str(exc)}
             )
             self._log_to_daily(
-                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ❌ 失败: {content[:30]}"
+                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] ❌ Failed: {content[:30]}"
             )
-            self._log_to_daily(f"   → 错误: {exc}")
+            self._log_to_daily(f"   → Error: {exc}")
 
     def _internet_search(self, query: str) -> str:
         """Search DuckDuckGo and return a formatted summary."""
         query_text = (query or "").strip()
         if not query_text:
-            return "未提供查询内容。"
+            return "No query provided."
 
         try:
             with DDGS() as ddgs:
@@ -258,17 +258,17 @@ class ParkingService:
             message = str(exc)
             lowered = message.lower()
             if "429" in message or "too many requests" in lowered:
-                return "搜索请求过于频繁，请稍后再试。"
+                return "Search rate-limited. Please try again later."
             if "timeout" in lowered:
-                return "搜索服务暂时不可用"
-            return f"搜索失败: {message}"
+                return "Search service temporarily unavailable."
+            return f"Search failed: {message}"
 
         if not results:
-            return "未找到相关信息，建议换个关键词。"
+            return "No results found. Try different keywords."
 
-        lines: List[str] = ["🔍 搜索结果：", ""]
+        lines: List[str] = ["🔍 Search results:", ""]
         for idx, item in enumerate(results, start=1):
-            title = (item.get("title") or "无标题").strip()
+            title = (item.get("title") or "Untitled").strip()
             url = (
                 item.get("href")
                 or item.get("url")
@@ -287,10 +287,10 @@ class ParkingService:
             if snippet:
                 lines.append(f"   {snippet}")
             if url:
-                lines.append(f"   来源: {url}")
+                lines.append(f"   Source: {url}")
             lines.append("")
 
-        lines.append(f"（共 {len(results)} 条结果，完整内容见 current_parking.json）")
+        lines.append(f"({len(results)} results; full details in current_parking.json)")
         return "\n".join(lines).rstrip()
 
     def _fetch_with_webfetch(self, url: str) -> str:
@@ -298,12 +298,12 @@ class ParkingService:
         try:
             from connectonion import Agent, WebFetch
         except ImportError:
-            return "[系统错误] 无法导入 ConnectOnion 组件。"
+            return "[System Error] Unable to import ConnectOnion components."
 
         system_instruction = (
-            "你使用 WebFetch 抓取并总结网页内容。"
-            "只处理已经提供的 URL，不要尝试搜索或猜测其他链接。"
-            "输出简洁摘要和关键要点。"
+            "Use WebFetch to retrieve and summarize the webpage content. "
+            "Only process the provided URL; do not search or guess other links. "
+            "Return a concise summary with key points."
         )
 
         try:
@@ -316,14 +316,15 @@ class ParkingService:
                 quiet=True,
             )
             prompt = (
-                "请抓取并总结以下网页的核心信息，给出要点式摘要：\n"
+                "Fetch and summarize the core information from this webpage. "
+                "Provide a bullet-style summary:\n"
                 f"{url}\n"
-                "不要进行额外搜索。"
+                "Do not perform any additional search."
             )
             result = searcher.input(prompt)
             return str(result)
         except Exception as exc:
-            return f"[处理失败] 网页抓取出错: {exc}"
+            return f"[Failed] Web fetch error: {exc}"
 
     def _perform_search(self, query: str) -> str:
         """

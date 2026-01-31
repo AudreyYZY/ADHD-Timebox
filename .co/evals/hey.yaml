@@ -1,0 +1,14 @@
+name: hey
+created: '2026-01-31 10:17:43'
+updated: '2026-01-31 10:17:43'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: hey
+  run: 1
+  output: 'REPLY: 你好！我是你的中枢，请告诉我下一步行动。'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 415, "cost": 0.0007, "duration_ms": 5597, "ts": "2026-01-31 10:17:43"}'
+  history: []

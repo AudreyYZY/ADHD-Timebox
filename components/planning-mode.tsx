@@ -4,7 +4,7 @@ import React from "react";
 
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { TextStreamChatTransport } from "ai";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore, type Task } from "@/lib/store";
@@ -19,6 +19,34 @@ function getMessageText(message: { parts?: Array<{ type: string; text?: string }
     .join("");
 }
 
+function PendingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div
+        className="rounded-2xl border border-border bg-card px-4 py-3"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="flex gap-1">
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "0ms" }}
+          />
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "150ms" }}
+          />
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "300ms" }}
+          />
+        </div>
+        <span className="sr-only">Assistant is thinking</span>
+      </div>
+    </div>
+  );
+}
+
 export function PlanningMode() {
   const [input, setInput] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
@@ -29,7 +57,7 @@ export function PlanningMode() {
   const { setCurrentTask, setUserState, setTimeRemaining, setIsTimerRunning, addTask } = useAppStore();
 
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat/planning" }),
+    transport: new TextStreamChatTransport({ api: "/api/chat/stream" }),
   });
 
   const isLoading = status === "streaming" || status === "submitted";
@@ -95,17 +123,9 @@ export function PlanningMode() {
           </div>
         )}
 
-        {messages.map((message, index) => {
+        {messages.map((message) => {
           const text = getMessageText(message);
-          const isAssistantMessage = message.role === "assistant";
-          const isLatestMessage = index === messages.length - 1;
-          const shouldShowPending =
-            isAssistantMessage &&
-            !text &&
-            isLatestMessage &&
-            (status === "streaming" || status === "submitted");
-
-          if (!text && !shouldShowPending) return null;
+          if (!text) return null;
 
           return (
             <div
@@ -124,33 +144,25 @@ export function PlanningMode() {
                 )}
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {shouldShowPending ? "..." : text}
+                  {text}
                 </p>
               </div>
             </div>
           );
         })}
 
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-card border border-border rounded-2xl px-4 py-3">
-              <div className="flex gap-1">
-                <span
-                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <span
-                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <span
-                  className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        {(() => {
+          const lastMessage = messages[messages.length - 1];
+          const lastMessageText = lastMessage ? getMessageText(lastMessage) : "";
+          const waitingForAssistant =
+            status === "submitted" ||
+            (status === "streaming" &&
+              (!lastMessage ||
+                lastMessage.role !== "assistant" ||
+                !lastMessageText));
+
+          return waitingForAssistant ? <PendingIndicator /> : null;
+        })()}
 
         <div ref={messagesEndRef} />
       </div>

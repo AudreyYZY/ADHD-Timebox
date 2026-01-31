@@ -44,7 +44,9 @@ def _latest_plan_snapshot(plan_dir: str) -> Tuple[Optional[float], Optional[str]
 
 
 def _extract_ascii_art(content: str) -> Tuple[str, Optional[str]]:
-    note = "(SYSTEM NOTE: 请务必在最终回复中原样展示上述 ASCII Art 奖励，不要省略。)"
+    note = (
+        "(SYSTEM NOTE: Please display the ASCII Art reward above verbatim; do not omit it.)"
+    )
     if note not in content:
         return content, None
 
@@ -60,11 +62,11 @@ def _extract_ascii_art(content: str) -> Tuple[str, Optional[str]]:
 @router.post("/api/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest, state=Depends(get_app_state)):
     if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "服务尚未就绪")
+        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
 
     message = (payload.message or "").strip()
     if not message:
-        return error_response(400, "INVALID_MESSAGE", "message 不能为空")
+        return error_response(400, "INVALID_MESSAGE", "message cannot be empty")
 
     plan_dir = state.orchestrator.plan_manager.plan_dir
     before_mtime, _ = _latest_plan_snapshot(plan_dir)
@@ -72,7 +74,7 @@ async def chat(payload: ChatRequest, state=Depends(get_app_state)):
     try:
         content = await run_in_threadpool(state.orchestrator.route, message)
     except Exception as exc:
-        return error_response(500, "ORCHESTRATOR_ERROR", "对话处理失败", str(exc))
+        return error_response(500, "ORCHESTRATOR_ERROR", "Chat processing failed", str(exc))
 
     after_mtime, newest_path = _latest_plan_snapshot(plan_dir)
     tasks_updated = before_mtime != after_mtime and after_mtime is not None

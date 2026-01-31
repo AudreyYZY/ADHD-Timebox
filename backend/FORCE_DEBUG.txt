@@ -19,3 +19,22 @@
 [22:55:42] >>> plan_tools_v2 模块已被加载！<<<
 [22:56:05] >>> plan_tools_v2 模块已被加载！<<<
 [22:58:05] >>> plan_tools_v2 模块已被加载！<<<
+[00:18:13] create_daily_plan (Smart Merge) 被调用！参数类型: <class 'str'>
+[00:18:13] 原始数据摘要: [{"title":"深度学习","start":"2026-01-31 00:30","end":"2026-01-31 01:30","type":"work","status":"pending...
+[00:18:13] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[00:18:13] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[00:18:13] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[00:18:13] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[00:18:13] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 4

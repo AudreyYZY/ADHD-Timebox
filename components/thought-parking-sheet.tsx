@@ -4,7 +4,7 @@ import React from "react";
 
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { TextStreamChatTransport } from "ai";
 import {
   Sheet,
   SheetContent,
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Send, ParkingCircle, X } from "lucide-react";
+import { Send, ParkingCircle } from "lucide-react";
 
 function getMessageText(message: {
   parts?: Array<{ type: string; text?: string }>;
@@ -28,6 +28,34 @@ function getMessageText(message: {
     .join("");
 }
 
+function PendingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div
+        className="rounded-2xl bg-muted px-4 py-2.5"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="flex gap-1">
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "0ms" }}
+          />
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "150ms" }}
+          />
+          <span
+            className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce"
+            style={{ animationDelay: "300ms" }}
+          />
+        </div>
+        <span className="sr-only">Assistant is thinking</span>
+      </div>
+    </div>
+  );
+}
+
 export function ThoughtParkingSheet() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,7 +63,7 @@ export function ThoughtParkingSheet() {
     useAppStore();
 
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat/parking" }),
+    transport: new TextStreamChatTransport({ api: "/api/chat/stream" }),
   });
 
   const isLoading = status === "streaming" || status === "submitted";
@@ -121,26 +149,20 @@ export function ThoughtParkingSheet() {
                 );
               })}
 
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-2xl px-4 py-2.5">
-                    <div className="flex gap-1">
-                      <span
-                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <span
-                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
+              {(() => {
+                const lastMessage = messages[messages.length - 1];
+                const lastMessageText = lastMessage
+                  ? getMessageText(lastMessage)
+                  : "";
+                const waitingForAssistant =
+                  status === "submitted" ||
+                  (status === "streaming" &&
+                    (!lastMessage ||
+                      lastMessage.role !== "assistant" ||
+                      !lastMessageText));
+
+                return waitingForAssistant ? <PendingIndicator /> : null;
+              })()}
 
               <div ref={messagesEndRef} />
             </div>

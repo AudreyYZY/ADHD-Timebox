@@ -34,6 +34,10 @@ export interface ChatMessage {
 }
 
 interface AppState {
+  // Hydration
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   // Onboarding
   hasCompletedOnboarding: boolean;
   setHasCompletedOnboarding: (value: boolean) => void;
@@ -79,6 +83,10 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
+      // Hydration
+      hasHydrated: false,
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
+
       // Onboarding
       hasCompletedOnboarding: false,
       setHasCompletedOnboarding: (value) =>
@@ -151,6 +159,9 @@ export const useAppStore = create<AppState>()(
         planningMessages: state.planningMessages,
         parkingMessages: state.parkingMessages,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

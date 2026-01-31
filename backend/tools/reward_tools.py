@@ -12,32 +12,32 @@ except Exception:  # pragma: no cover - defensive fallback
     cowsay = None
 
 
-# Lightweight夸奖语录库，避免每次都调 LLM
+# Lightweight praise phrases to avoid calling the LLM every time.
 MICRO_PHRASES = [
-    "火力全开，命中目标！",
-    "干得漂亮，收获 +1 多巴胺。",
-    "技能冷却完毕，下一关走起！",
-    "小步快跑，连击不断！",
-    "完美收招，保持节奏。",
-    "一刀斩断，利落又帅气。",
-    "解锁进度条，前进 1 格。",
-    "打怪掉落：自信 +5。",
+    "Full power, target hit!",
+    "Nice work, dopamine +1.",
+    "Cooldown complete, next level!",
+    "Small steps, steady combo.",
+    "Clean finish, keep the rhythm.",
+    "One clean strike, slick and sharp.",
+    "Progress bar unlocked, +1.",
+    "Loot drop: confidence +5.",
 ]
 
 MACRO_PHRASES = [
-    "今日主线告捷，坐等战利品。",
-    "整日刷本成功，经验值暴涨！",
-    "Boss 已倒地，英雄请领奖。",
-    "史诗时刻，献上荣誉横幅。",
+    "Main quest cleared, claim your loot.",
+    "Full-day run complete, XP surged!",
+    "Boss down. Collect your rewards.",
+    "Epic moment. Raise the banner.",
 ]
 
-# cowsay 的小型与“大型/稀有”角色列表；会在运行时过滤实际存在的角色
+# cowsay small and large/rare character lists (filtered at runtime for availability).
 SMALL_CHARACTERS = ["cow", "kitty", "pig", "turtle", "turkey", "fox", "cheese", "daemon", "octopus"]
 BIG_CHARACTERS = ["dragon", "stegosaurus", "tux", "trex"]
 
 
 class RewardToolkit:
-    """封装 cowsay 奖励输出与日志存档。"""
+    """Wrap cowsay reward output and summary logging."""
 
     def __init__(self, brain_dir: Optional[str] = None, log_dir: Optional[str] = None):
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,34 +48,31 @@ class RewardToolkit:
         self._has_cowsay = cowsay is not None
         self._available_chars = set(getattr(cowsay, "char_names", SMALL_CHARACTERS)) if cowsay else set()
 
-    # -- 公开方法 ------------------------------------------------------
+    # -- Public methods ------------------------------------------------
 
     def get_random_character(self, is_big: bool = False) -> str:
-        """返回随机 cowsay 角色，按需倾向“大型”角色。"""
+        """Return a random cowsay character, optionally favoring large ones."""
         pool = self._filter_available(BIG_CHARACTERS if is_big else SMALL_CHARACTERS)
-        if not pool:  # 回退到全部角色再到默认 cow
+        if not pool:  # Fall back to all characters, then default cow.
             pool = self._filter_available(SMALL_CHARACTERS + BIG_CHARACTERS) or ["cow"]
         return random.choice(pool)
 
     def get_hype_phrase(self, is_macro: bool = False) -> str:
-        """返回随机鼓励语句，宏模式用宏语录，否则用微语录。"""
+        """Return a random hype phrase; macro uses MACRO, otherwise MICRO."""
         pool = MACRO_PHRASES if is_macro else MICRO_PHRASES
         return random.choice(pool)
 
     def generate_micro_reward(self, task_name: Optional[str] = None) -> str:
         """
-        生成小任务奖励的 ASCII 艺术。
-        主要使用内置语录，保证延迟极低。
+        Generate a micro-task ASCII reward using local phrases for low latency.
         """
-        title = (task_name or "这条任务").strip()
+        title = (task_name or "this task").strip()
         phrase = self.get_hype_phrase(is_macro=False)
-        message = f"搞定「{title}」！{phrase}"
+        message = f"Done \"{title}\"! {phrase}"
         return self._render(message, is_big=False)
 
     def generate_macro_reward(self, summary_text: str) -> str:
-        """
-        生成日结/宏奖励的 ASCII 艺术。
-        """
+        """Generate a macro/day-end ASCII reward."""
         phrase = self.get_hype_phrase(is_macro=True)
         combined = f"{summary_text.strip()}\n—— {phrase}"
         return self._render(combined, is_big=True)
@@ -86,9 +83,7 @@ class RewardToolkit:
         summary_text: str,
         completed_tasks: Optional[List[dict]] = None,
     ) -> str:
-        """
-        将每日总结落盘，返回保存路径。
-        """
+        """Persist daily summary to disk and return the saved path."""
         date_str = plan_date.isoformat()
         path = os.path.join(self.log_dir, f"daily_summary_{date_str}.md")
         lines = [
@@ -101,7 +96,7 @@ class RewardToolkit:
             lines.append("")
             lines.append("## Completed Tasks")
             for task in tasks:
-                title = task.get("title") or task.get("id") or "任务"
+                title = task.get("title") or task.get("id") or "Task"
                 start = task.get("start") or "-"
                 end = task.get("end") or "-"
                 lines.append(f"- {title} ({start} - {end})")
@@ -110,7 +105,7 @@ class RewardToolkit:
             f.write(content)
         return path
 
-    # -- 内部方法 ------------------------------------------------------
+    # -- Internal methods ---------------------------------------------
 
     def _filter_available(self, candidates: List[str]) -> List[str]:
         if not self._has_cowsay:
@@ -118,24 +113,24 @@ class RewardToolkit:
         return [c for c in candidates if c in self._available_chars]
 
     def _render(self, text: str, is_big: bool = False) -> str:
-        """优先用 cowsay 渲染，否则使用简易气泡回退。"""
+        """Render with cowsay when available; otherwise use a simple bubble."""
         character = self.get_random_character(is_big=is_big)
         if self._has_cowsay:
             try:
-                # get_output_string 是 python-cowsay 的官方 API
+                # get_output_string is the official python-cowsay API
                 render_fn = getattr(cowsay, "get_output_string", None)
                 if callable(render_fn):
                     return render_fn(character, text)
-                # 回退到同名函数（某些版本导出为属性）
+                # Fall back to same-named function (some versions export it as an attr)
                 cow_fn = getattr(cowsay, character, None)
                 if callable(cow_fn):
                     return cow_fn(text)
             except Exception:
-                pass  # 继续走回退
+                pass  # Continue to fallback
         return self._render_fallback(text)
 
     def _render_fallback(self, text: str) -> str:
-        """当未安装 cowsay 时的文本气泡回退。"""
+        """Fallback bubble rendering when cowsay is unavailable."""
         wrapped = self._wrap(text)
         lines = wrapped.splitlines() or [text]
         width = max(len(line) for line in lines)

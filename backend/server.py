@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
         load_dotenv(env_path)
 
         if not os.getenv("OPENONION_API_KEY"):
-            raise RuntimeError("OPENONION_API_KEY 未配置，请检查 .env 文件")
+            raise RuntimeError("OPENONION_API_KEY is not set. Check backend/.env.")
 
         app_state.event_loop = asyncio.get_running_loop()
         app_state.event_queue = asyncio.Queue()
