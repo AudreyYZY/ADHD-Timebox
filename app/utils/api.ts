@@ -1,4 +1,6 @@
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000/api";
+const LOCAL_API_BASE = "/api";
 
 export interface ChatResponse {
   response: string;
@@ -35,7 +37,7 @@ export const api = {
   },
 
   getTasks: async (): Promise<BackendTask[]> => {
-    const res = await fetch(`${API_BASE_URL}/tasks`);
+    const res = await fetch(`${LOCAL_API_BASE}/tasks`);
     if (!res.ok) {
       throw new Error("Failed to fetch tasks");
     }
@@ -55,7 +57,7 @@ export const api = {
   },
 
   updateTaskStatus: async (taskId: string, status: string): Promise<void> => {
-    const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    const res = await fetch(`${LOCAL_API_BASE}/tasks/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

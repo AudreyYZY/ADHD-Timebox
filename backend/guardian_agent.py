@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from connectonion import Agent, Memory, WebFetch
 
+from agents.model_config import resolve_model
 try:
     from connectonion import GoogleCalendar
 except Exception:
@@ -34,7 +35,9 @@ os.makedirs(PARKING_DIR, exist_ok=True)
 HANDOVER_NOTE_FILE = os.path.join(ADHD_DIR, "handover_note.json")
 UPDATED_PLAN_FILE = os.path.join(ADHD_DIR, "updated_tasks.json")
 
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 
 
 class CalendarFallback:
@@ -134,14 +137,14 @@ class PlanRepository:
         path = self.resolve_plan_path(date)
         if not path:
             target_date = date or datetime.date.today().isoformat()
-            return None, f"未找到计划文件：{os.path.join(self.plan_dir, f'daily_tasks_{target_date}.json')}"
+            return None, f"Plan file not found: {os.path.join(self.plan_dir, f'daily_tasks_{target_date}.json')}"
         try:
             with open(path, "r") as f:
                 tasks = json.load(f)
         except Exception as exc:
-            return None, f"读取计划失败：{exc}"
+            return None, f"Failed to read plan: {exc}"
         if not isinstance(tasks, list):
-            return None, "计划文件格式异常（应为列表）。"
+            return None, "Invalid plan format (expected list)."
         plan_date = self._plan_date_from_path(path)
         normalized = self._normalize_tasks(tasks, plan_date)
         data = {"path": path, "plan_date": plan_date, "tasks": tasks, "normalized": normalized}
@@ -181,18 +184,18 @@ class PlanRepository:
         with open(UPDATED_PLAN_FILE, "w") as f:
             json.dump(plan_data["tasks"], f, ensure_ascii=False, indent=2)
         self._latest = plan_data
-        return f"计划已更新：{target_path}"
+        return f"Plan updated: {target_path}"
 
     def shift_remaining(self, plan_data: Dict, anchor_id: str, delay_minutes: int) -> str:
         normalized = plan_data.get("normalized") or []
         anchor = next((t for t in normalized if t.get("id") == anchor_id), None)
         if not anchor:
-            return f"未找到任务 {anchor_id}"
+            return f"Task not found: {anchor_id}"
         delta = datetime.timedelta(minutes=delay_minutes)
         plan_date = plan_data["plan_date"]
         anchor_end = anchor.get("end_dt") or anchor.get("start_dt") or datetime.datetime.now().astimezone()
 
-        # 更新 anchor 结束时间
+        # Update anchor end time
         include_anchor_date = self._should_include_date(anchor.get("end") or anchor.get("start"), plan_date)
         new_anchor_end = anchor_end + delta
         plan_data["tasks"][anchor["index"]]["end"] = self._dt_to_str(new_anchor_end, include_anchor_date)
@@ -213,11 +216,11 @@ class PlanRepository:
             if new_end:
                 plan_data["tasks"][task["index"]]["end"] = self._dt_to_str(new_end, include_date)
         self.save_plan(plan_data)
-        return f"已顺延 {delay_minutes} 分钟，并重排后续任务。"
+        return f"Delayed by {delay_minutes} minutes and rescheduled remaining tasks."
 
     def day_summary(self, plan_data: Optional[Dict]) -> str:
         if not plan_data:
-            return "今日计划未加载。"
+            return "Today's plan is not loaded."
         tasks = plan_data.get("tasks", [])
         done = len([t for t in tasks if t.get("status") == "done"])
         total = len(tasks)
@@ -230,11 +233,11 @@ class PlanRepository:
                 delta = max(0, (end - start).total_seconds() / 60)
                 minutes += delta
         hours = f"{minutes/60:.1f}".rstrip("0").rstrip(".") or "0"
-        return f"今天完成 {done}/{total} 项，专注 {hours} 小时。"
+        return f"Completed {done}/{total} tasks today, focused {hours} hours."
 
 
 class ContextAwarenessTool:
-    """感知当前环境与任务状态。"""
+    """Sense current environment and task status."""
 
     def __init__(self, plan_repo: PlanRepository):
         self.plan_repo = plan_repo
@@ -243,18 +246,18 @@ class ContextAwarenessTool:
         """Return current time, plan overview and focus task."""
         now = datetime.datetime.now().astimezone()
         plan_data, error = self.plan_repo.load_plan()
-        header = now.strftime("当前时间：%Y-%m-%d %H:%M:%S %Z (UTC%z)")
+        header = now.strftime("Current time: %Y-%m-%d %H:%M:%S %Z (UTC%z)")
         if error or not plan_data:
-            return f"{header}\n{error or '未加载计划'}"
+            return f"{header}\n{error or 'Plan not loaded'}"
         status, task = self.plan_repo.determine_focus(plan_data)
         plan_date = plan_data["plan_date"]
         tasks = plan_data.get("tasks", [])
-        lines = [header, f"计划日期：{plan_date}，任务数：{len(tasks)}", f"状态：{status}"]
+        lines = [header, f"Plan date: {plan_date}, tasks: {len(tasks)}", f"Status: {status}"]
         if task:
             start = task.get("start") or "-"
             end = task.get("end") or "-"
-            title = task.get("title") or "当前任务"
-            lines.append(f"聚焦：{title}（{start}-{end}）")
+            title = task.get("title") or "current task"
+            lines.append(f"Focus: {title} ({start}-{end})")
         return "\n".join(lines)
 
     def get_active_window(self) -> str:
@@ -279,14 +282,14 @@ class ContextAwarenessTool:
                 check=False,
             )
         except Exception as exc:  # pragma: no cover - platform dependent
-            return f"获取前台窗口失败：{exc}"
+            return f"Failed to get active window: {exc}"
         if result.returncode != 0:
-            return f"osascript 错误：{result.stderr.strip()}"
-        return result.stdout.strip() or "未获取到前台窗口。"
+            return f"osascript error: {result.stderr.strip()}"
+        return result.stdout.strip() or "No active window found."
 
 
 class ThoughtExpanderTool:
-    """处理念头停车场并自动扩展搜索。"""
+    """Handle thought parking and auto-expand search."""
 
     def __init__(self, plan_repo: PlanRepository, memory: Memory, webfetch: WebFetch):
         self.plan_repo = plan_repo
@@ -300,9 +303,9 @@ class ThoughtExpanderTool:
     def _seasonal_hint(self) -> str:
         month = datetime.date.today().month
         if month in (12, 1, 2):
-            return "冬季保暖"
+            return "winter warmth"
         if month in (6, 7, 8):
-            return "夏季清凉"
+            return "summer cool"
         return ""
 
     def _fetch_search_results(self, query: str) -> List[Tuple[str, str]]:
@@ -339,19 +342,19 @@ class ThoughtExpanderTool:
             results = self._fetch_search_results(query)
         except Exception as exc:
             results = []
-            fetch_error = f"搜索失败：{exc}"
+            fetch_error = f"Search failed: {exc}"
         else:
             fetch_error = ""
 
-        lines = [f"念头：{thought}", f"搜索词：{query}"]
+        lines = [f"Thought: {thought}", f"Query: {query}"]
         if results:
-            lines.append("结果：")
+            lines.append("Results:")
             for title, href in results:
                 lines.append(f"- {title} | {href}")
         elif fetch_error:
             lines.append(fetch_error)
         else:
-            lines.append("未找到有效结果，但已记录念头。")
+            lines.append("No valid results found, but the thought is logged.")
 
         parking_path = self._parking_path()
         ts = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
@@ -361,47 +364,50 @@ class ThoughtExpanderTool:
 
         memory_key = f"thought_{datetime.date.today().isoformat()}"
         self.memory.write_memory(memory_key, "\n".join(lines))
-        return f"已记录到念头停车场（{parking_path}）。{fetch_error or '先专注当前任务，稍后再处理这些灵感。'}"
+        return (
+            f"Logged to thought parking ({parking_path}). "
+            f"{fetch_error or 'Stay on the current task; handle these ideas later.'}"
+        )
 
 
 class ScheduleManagerTool:
-    """管理任务进度与弹性重排。"""
+    """Manage task progress and flexible rescheduling."""
 
     def __init__(self, plan_repo: PlanRepository, memory: Memory, calendar: object):
         self.plan_repo = plan_repo
         self.memory = memory
         self.calendar = calendar
         self.micro_tasks = [
-            "只写开头的一句话",
-            "打开文档，把标题敲出来",
-            "整理桌面 3 分钟",
-            "写下一条你要回答的问题",
-            "只读一段参考资料",
-            "把计时器设为 5 分钟，什么都不想，开始做",
-            "给自己倒一杯水并回到座位",
+            "Write just the first sentence.",
+            "Open the document and type the title.",
+            "Tidy your desk for 3 minutes.",
+            "Write down one question you need to answer.",
+            "Read one short reference paragraph.",
+            "Set a 5-minute timer, think nothing, and start.",
+            "Pour a glass of water and return to your seat.",
         ]
 
     def check_task_status(self, task_id: str) -> str:
         """Check start/end/status for a task."""
         plan_data, error = self.plan_repo.load_plan()
         if error or not plan_data:
-            return error or "未找到计划。"
+            return error or "Plan not found."
         task = self.plan_repo._find_task(plan_data, task_id)
         if not task:
-            return f"未找到任务 {task_id}"
+            return f"Task not found: {task_id}"
         title = task.get("title") or task_id
         start = task.get("start") or "-"
         end = task.get("end") or "-"
         status = task.get("status", "pending")
-        return f"{title}（{task_id}）：{start}-{end}，状态：{status}"
+        return f"{title} ({task_id}): {start}-{end}, status: {status}"
 
     def reschedule_remaining_day(self, current_task_id: str, delay_minutes: int) -> str:
         """Shift the current task and the rest of the day by given minutes."""
         if delay_minutes == 0:
-            return "延迟为 0，无需调整。"
+            return "Delay is 0; no changes needed."
         plan_data, error = self.plan_repo.load_plan()
         if error or not plan_data:
-            return error or "未找到计划。"
+            return error or "Plan not found."
         msg = self.plan_repo.shift_remaining(plan_data, current_task_id, delay_minutes)
         try:
             anchor = self.plan_repo._find_task(plan_data, current_task_id)
@@ -410,10 +416,10 @@ class ScheduleManagerTool:
                     title=anchor.get("title", current_task_id),
                     start_time=anchor["start"],
                     end_time=anchor["end"],
-                    description="GuardianAgent 自动重排",
+                    description="GuardianAgent auto-reschedule",
                 )
         except Exception:
-            msg += " | 日历同步已跳过。"
+            msg += " | Calendar sync skipped."
         self.memory.write_memory("schedule_adjustments", f"{msg} | task={current_task_id}")
         return msg
 
@@ -422,32 +428,32 @@ class ScheduleManagerTool:
         picks = list(self.micro_tasks)
         random.shuffle(picks)
         if context:
-            picks.insert(0, f"针对 {context}：只做第一步，5 分钟即可。")
+            picks.insert(0, f"For {context}: do only the first step, 5 minutes.")
         suggestion = picks[0]
         self.memory.write_memory("micro_task_hint", suggestion)
         return suggestion
 
 
 class RewardSystemTool:
-    """发放情绪奖励。"""
+    """Dispense motivational rewards."""
 
     def __init__(self, plan_repo: PlanRepository):
         self.plan_repo = plan_repo
         self._phrases_level1 = [
-            "任务杀手！",
-            "多巴胺满载！",
-            "今日成就解锁！",
-            "收工！把快乐装进口袋。",
-            "大脑电量回满，去享受奖励吧！",
+            "Task slayer!",
+            "Dopamine fully charged!",
+            "Achievement unlocked!",
+            "Wrap it up and pocket the joy.",
+            "Brain battery recharged - enjoy your reward!",
         ]
         self._phrases_level2 = [
-            "龙在等你：回到任务上，砍掉一点就好。",
-            "坚持 5 分钟，未来的你会感谢现在的你。",
-            "拖延怪靠近中，快用一个动作把它吓跑！",
+            "The dragon is waiting. Return to the task and cut one piece.",
+            "Hold for 5 minutes; your future self will thank you.",
+            "The procrastination monster is near - scare it off with one action!",
         ]
         self._phrases_level3 = [
-            "收官拉满，今天的你很稳。",
-            "全天战绩总结，解锁稀有彩蛋。",
+            "Strong finish. You were steady today.",
+            "All-day report complete. Rare Easter egg unlocked.",
         ]
 
     def _cowsay(self, text: str, mood: str = "cow") -> str:
@@ -482,7 +488,7 @@ class RewardSystemTool:
                 parking = f.read().strip()
         reward_block = f"{phrase}\n{report}"
         if parking:
-            reward_block += f"\n\n今天的念头停车场：\n{parking}"
+            reward_block += f"\n\nToday's thought parking:\n{parking}"
         return self._cowsay(reward_block, "stegosaurus")
 
 
@@ -499,11 +505,12 @@ reward_tool = RewardSystemTool(plan_repo)
 
 
 guardian_system_prompt = """
-你是 GuardianAgent，一位既严厉又温柔的 ADHD 时间守护者。
-- 始终基于 daily_tasks_YYYY-MM-DD.json 和 handover_note.json 的真实内容发言，禁止臆造计划。
-- 优先调用工具执行：ContextAwareness 获取当前任务，ThoughtExpander 处理念头停车场，ScheduleManager 调整日程，RewardSystem 奖励。
-- 工作流：启动问询顺利度 -> 顺利则进入专注监听，记录念头并提醒走神；阻滞则给出 5 分钟微任务，必要时调用 reschedule_remaining_day 顺延；收尾时释放奖励，并吐出念头停车场。
-- 语气：简短指令式、鼓励，不做长篇说教。
+You are GuardianAgent, a strict yet caring ADHD time guardian.
+Respond in English only, even if the user writes in another language.
+- Always speak based on the real contents of daily_tasks_YYYY-MM-DD.json and handover_note.json. Never invent plans.
+- Prefer tool use: ContextAwareness for current task, ThoughtExpander for thought parking, ScheduleManager for rescheduling, RewardSystem for rewards.
+- Flow: ask how the start feels -> if smooth, stay in focus mode and log thoughts; if blocked, give 5-minute micro-tasks and use reschedule_remaining_day if needed; at the end, release rewards and show the thought parking summary.
+- Tone: short, directive, encouraging. No long lectures.
 """.strip()
 
 
@@ -524,7 +531,7 @@ class GuardianAgent(Agent):
             name="guardian",
             tools=tools,
             system_prompt=guardian_system_prompt,
-            model="co/gemini-2.5-pro",
+            model=resolve_model(),
             max_iterations=6,
             quiet=False,
         )
@@ -542,41 +549,41 @@ class GuardianLoop:
         now_text = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")
         print(f"\n⏱️ {now_text}")
         if error or not plan_data:
-            print(f"⚠️ {error or '未找到计划文件'}")
+            print(f"⚠️ {error or 'Plan file not found'}")
             return
         plan_date = plan_data["plan_date"]
         tasks = plan_data["tasks"]
-        print(f"🗂️ 读取到 {plan_date} 的计划，共 {len(tasks)} 条：")
+        print(f"🗂️ Loaded plan for {plan_date}, {len(tasks)} tasks:")
         for idx, task in enumerate(tasks, start=1):
             start = task.get("start") or "-"
             end = task.get("end") or "-"
-            title = task.get("title") or f"任务 {idx}"
+            title = task.get("title") or f"Task {idx}"
             status = task.get("status", "pending")
             icon = "✅" if status == "done" else "⬜️"
             print(f"{icon} {idx}. {start}-{end} | {title} (id={task.get('id','?')})")
         status, focus_task = self.plan_repo.determine_focus(plan_data)
         if focus_task:
-            title = focus_task.get("title") or "当前任务"
-            print(f"🚦 状态：{status} | {title}")
-        print("现在是计划启动阶段，是否已经开始？顺利吗？")
+            title = focus_task.get("title") or "current task"
+            print(f"🚦 Status: {status} | {title}")
+        print("Are you started yet? Is it going smoothly?")
 
     def _maybe_end_of_day(self):
         plan_data, _ = self.plan_repo.load_plan()
         summary = reward_tool.dispense_reward(level=3)
-        print("\n🌙 日结：")
+        print("\n🌙 Day-end recap:")
         print(summary)
         if plan_data:
             self._write_handover_prompt(plan_data)
 
     def _write_handover_prompt(self, plan_data: Dict):
-        print("\n📩 给明天的 Planner 留句话？（回车跳过）")
+        print("\n📩 Leave a note for tomorrow's Planner? (enter to skip)")
         notes: List[str] = []
         while True:
-            note = input("留言：").strip()
+            note = input("Note: ").strip()
             if not note:
                 break
             notes.append(note)
-            more = input("继续添加？(y 继续，其它键结束)：").strip().lower()
+            more = input("Add another? (y to continue, enter to finish): ").strip().lower()
             if not more.startswith("y"):
                 break
         if not notes:
@@ -589,24 +596,24 @@ class GuardianLoop:
         }
         with open(HANDOVER_NOTE_FILE, "w") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
-        print(f"已写入交接留言：{HANDOVER_NOTE_FILE}")
+        print(f"Handover note saved: {HANDOVER_NOTE_FILE}")
 
     def run(self):
-        print("🛡️ GuardianAgent 已启动！输入 'q' 退出。")
+        print("🛡️ GuardianAgent started! Type 'q' to quit.")
         self._print_overview()
         while True:
-            user_input = input("\n你: ").strip()
+            user_input = input("\nYou: ").strip()
             if user_input.lower() in {"q", "quit", "exit"}:
                 self._maybe_end_of_day()
                 break
             response = self.agent.input(user_input)
-            print(f"\n守护者: {response}")
-            # 简易走神检测：每轮询问一次前台窗口
+            print(f"\nGuardian: {response}")
+            # Simple distraction check: query active window each round
             window_info = context_tool.get_active_window()
             if window_info and "::" in window_info:
                 app_name, title = window_info.split("::", 1)
                 if title and app_name:
-                    print(f"[走神检测] 当前前台：{app_name} - {title}")
+                    print(f"[Distraction Check] Active window: {app_name} - {title}")
 
 
 def main():

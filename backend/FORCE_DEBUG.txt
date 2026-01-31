@@ -38,3 +38,33 @@ Current scopes:
 Please authorize Google Calendar access:
   co auth google
 [00:18:13] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 4
+[10:19:33] create_daily_plan (Smart Merge) 被调用！参数类型: <class 'str'>
+[10:19:33] 原始数据摘要: [{"title":"专注时段","start":"2026-01-31 10:30","end":"2026-01-31 11:30","type":"work","status":"pending...
+[10:19:33] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[10:19:33] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[10:19:33] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[10:19:33] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[10:19:33] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 8
+[22:54:07] >>> plan_tools_v2 module loaded <<<
+[22:54:08] >>> plan_tools_v2 module loaded <<<
+[23:01:42] >>> plan_tools_v2 module loaded <<<
+[23:01:47] >>> plan_tools_v2 module loaded <<<
+[23:01:58] >>> plan_tools_v2 module loaded <<<
+[23:02:10] >>> plan_tools_v2 module loaded <<<
+[23:02:20] >>> plan_tools_v2 module loaded <<<
+[23:02:27] >>> plan_tools_v2 module loaded <<<
+[23:02:37] >>> plan_tools_v2 module loaded <<<
+[23:05:39] >>> plan_tools_v2 module loaded <<<
+[23:05:40] >>> plan_tools_v2 module loaded <<<

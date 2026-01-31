@@ -142,3 +142,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.cl-socialButtonsBlockButton__apple,
+.cl-socialButtonsBlockButton[data-provider="apple"],
+.cl-socialButtonsBlockButton[data-provider="oauth_apple"] {
+  display: none !important;
+}

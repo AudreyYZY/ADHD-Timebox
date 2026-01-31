@@ -7,6 +7,7 @@ from typing import Optional
 
 from connectonion import Agent, Memory
 
+from agents.model_config import resolve_model
 from agents.focus_agent import FocusAgent
 from agents.planner_agent import PlannerAgent
 from agents.reward_agent import RewardAgent
@@ -60,15 +61,25 @@ STATUS_FINISHED = "FINISHED"
 class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
     """Front-of-house router that simulates hand-offs."""
 
-    def __init__(self, plan_manager: Optional[PlanManager] = None):
+    def __init__(
+        self,
+        plan_manager: Optional[PlanManager] = None,
+        memory_dir: Optional[str] = None,
+        brain_dir: Optional[str] = None,
+        memory: Optional[Memory] = None,
+    ):
         # Shared memory for Planner / Focus / Reward agents.
-        self.shared_memory = Memory(memory_dir="adhd_brain/long_term_memory")
+        self.shared_memory = memory or Memory(
+            memory_dir=memory_dir or "adhd_brain/long_term_memory"
+        )
         # Warm PlannerAgent; keep PlanManager at router level for context injection.
         self.plan_manager = plan_manager or PlanManager()
         self.planner_agent = PlannerAgent(
             plan_manager=self.plan_manager, memory=self.shared_memory
         )
-        self.parking_service = ParkingService()
+        self.parking_service = ParkingService(
+            brain_dir=brain_dir or self.plan_manager.plan_dir
+        )
         self.reward_agent = RewardAgent(plan_manager=self.plan_manager)
         self.focus_agent = FocusAgent(
             plan_manager=self.plan_manager,
@@ -119,7 +130,7 @@ class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
         temp_agent = Agent(
             name="orchestrator_temp",
             system_prompt=SYSTEM_PROMPT,
-            model="co/gemini-2.5-pro",
+            model=resolve_model(),
             tools=[],
             quiet=True,  # Reduce noisy logs
         )

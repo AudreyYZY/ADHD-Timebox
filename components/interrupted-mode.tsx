@@ -35,9 +35,11 @@ export function InterruptedMode() {
 
   const handleContinue = () => {
     if (currentTask && selectedOutcome) {
+      const completed = selectedOutcome === "finished";
       updateTask(currentTask.id, {
-        status: selectedOutcome === "finished" ? "completed" : selectedOutcome,
-        completedAt: selectedOutcome === "finished" ? new Date() : undefined,
+        status: completed ? "completed" : "pooled",
+        completedAt: completed ? new Date() : undefined,
+        startedAt: completed ? currentTask.startedAt : undefined,
       });
     }
     setCurrentTask(null);
@@ -49,6 +51,9 @@ export function InterruptedMode() {
 
   const handleTryAgain = () => {
     if (currentTask) {
+      const startedAt = new Date();
+      updateTask(currentTask.id, { status: "in-progress", startedAt });
+      setCurrentTask({ ...currentTask, status: "in-progress", startedAt });
       // Reset timer to original duration
       setTimeRemaining(currentTask.duration * 60);
       setUserState("focusing");

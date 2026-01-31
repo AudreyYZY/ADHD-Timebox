@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/zifeizhou/code/ADHD-Timebox/backend/new_agent.py", line 524, in <module>
+    calendar = GoogleCalendar()
+  File "/Users/zifeizhou/code/ADHD-Timebox/venv/lib/python3.14/site-packages/connectonion/useful_tools/google_calendar.py", line 61, in __init__
+    raise ValueError(
+    ...<4 lines>...
+    )
+ValueError: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google

@@ -202,7 +202,7 @@ function TaskItem({
     return <Circle className="h-4 w-4 text-muted-foreground/50" />;
   };
 
-  const isClickable = !isMuted && task.status === "pending";
+  const isClickable = !isMuted && (task.status === "pending" || task.status === "pooled");
 
   return (
     <div className="relative">
@@ -300,6 +300,7 @@ export function Sidebar() {
     tasks,
     currentTask,
     setCurrentTask,
+    updateTask,
     setUserState,
     setTimeRemaining,
     setIsTimerRunning,
@@ -370,10 +371,12 @@ export function Sidebar() {
 
   // Handle starting a task
   const handleStartTask = (task: Task) => {
+    const startedAt = new Date();
+    updateTask(task.id, { status: "in-progress", startedAt });
     setCurrentTask({
       ...task,
       status: "in-progress",
-      startedAt: new Date(),
+      startedAt,
     });
     setTimeRemaining(task.duration * 60);
     setIsTimerRunning(true);

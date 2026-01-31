@@ -34,5 +34,41 @@
     "status": "pending",
     "id": "task_1769789893_3",
     "google_event_id": null
+  },
+  {
+    "title": "专注时段",
+    "start": "2026-01-31 10:30",
+    "end": "2026-01-31 11:30",
+    "type": "work",
+    "status": "pending",
+    "id": "task_1769825973_0",
+    "google_event_id": null
+  },
+  {
+    "title": "休息与喝水",
+    "start": "2026-01-31 11:30",
+    "end": "2026-01-31 12:00",
+    "type": "rest",
+    "status": "pending",
+    "id": "task_1769825973_1",
+    "google_event_id": null
+  },
+  {
+    "title": "准备并享用午餐",
+    "start": "2026-01-31 12:00",
+    "end": "2026-01-31 13:00",
+    "type": "life",
+    "status": "pending",
+    "id": "task_1769825973_2",
+    "google_event_id": null
+  },
+  {
+    "title": "午间小憩",
+    "start": "2026-01-31 13:00",
+    "end": "2026-01-31 14:00",
+    "type": "life",
+    "status": "pending",
+    "id": "task_1769825973_3",
+    "google_event_id": null
   }
 ]

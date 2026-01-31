@@ -9,6 +9,8 @@ from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from agents.model_config import resolve_model
+
 try:
     # Preferred package name (avoids runtime warning in duckduckgo_search)
     from ddgs import DDGS  # type: ignore
@@ -310,7 +312,7 @@ class ParkingService:
             web_tool = WebFetch()
             searcher = Agent(
                 name="parking_searcher",
-                model="co/gemini-2.5-pro",
+                model=resolve_model(),
                 tools=[web_tool],
                 system_prompt=system_instruction,
                 quiet=True,

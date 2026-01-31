@@ -1,4 +1,12 @@
-const BACKEND_CHAT_URL = "http://localhost:8000/api/chat";
+import { auth } from "@clerk/nextjs/server";
+
+const RAW_BACKEND_URL =
+  process.env.BACKEND_CHAT_URL ??
+  process.env.BACKEND_BASE_URL ??
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  "http://127.0.0.1:8000";
+const BACKEND_BASE_URL = RAW_BACKEND_URL.replace(/\/api\/?$/, "");
+const BACKEND_CHAT_URL = `${BACKEND_BASE_URL}/api/chat`;
 const DEFAULT_FALLBACK =
   "Sorry, I couldn't reach the assistant. Please try again.";
 const FAST_START_DELAY_MS = 20;
@@ -63,6 +71,24 @@ function getLastUserMessageText(messages: ChatMessage[]): string {
   return "";
 }
 
+async function getBackendErrorMessage(response: Response): Promise<string> {
+  try {
+    const data = await response.json();
+    const detail =
+      typeof data?.detail === "string"
+        ? data.detail
+        : typeof data?.message === "string"
+        ? data.message
+        : typeof data?.error === "string"
+        ? data.error
+        : "";
+    if (detail) return detail;
+  } catch {
+    // Fall back to status text if body isn't JSON.
+  }
+  return response.statusText || `HTTP ${response.status}`;
+}
+
 function streamTextByWord(
   text: string,
   signal?: AbortSignal,
@@ -110,6 +136,20 @@ function streamTextByWord(
 }
 
 export async function POST(req: Request) {
+  const { userId } = auth();
+  if (!userId) {
+    const fallbackStream = streamTextByWord(
+      "Please sign in to use the assistant.",
+      req.signal
+    );
+    return new Response(fallbackStream, {
+      status: 401,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
   let payload: { messages?: ChatMessage[] } | undefined;
 
   try {
@@ -145,7 +185,7 @@ export async function POST(req: Request) {
   try {
     const backendResponse = await fetch(BACKEND_CHAT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-User-Id": userId },
       body: JSON.stringify({ message: userMessage }),
     });
 
@@ -157,6 +197,9 @@ export async function POST(req: Request) {
           : typeof data?.response === "string"
           ? data.response
           : responseText;
+    } else {
+      const errorMessage = await getBackendErrorMessage(backendResponse);
+      responseText = `Assistant server error: ${errorMessage}.`;
     }
   } catch {
     responseText = DEFAULT_FALLBACK;

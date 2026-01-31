@@ -1,6 +1,6 @@
 name: system_context_current_time_2026_01_31_00_19_cst
 created: '2026-01-31 00:20:08'
-updated: '2026-01-31 02:32:13'
+updated: '2026-01-31 10:27:48'
 runs: 1
 model: gemini-2.5-pro
 turns:
@@ -459,4 +459,60 @@ turns:
   evaluation: ''
   meta: '{"tokens": 52230, "cost": 0.0673, "duration_ms": 7806, "ts": "2026-01-31
     02:32:13"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 10:22 CST
+
+    Active Window: WeChat - WeChat (Chats)
+
+    Active Task: 专注时段
+
+    Task Window: 10:30 - 11:30 | Status=current
+
+    Remaining Minutes: 67
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/8
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：WeChat - WeChat (Chats)。当前任务：专注时段'
+  run: 1
+  output: 👀 我检测到你当前停留在「WeChat - WeChat (Chats)」，请问这属于「专注时段」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 56783, "cost": 0.0733, "duration_ms": 10188, "ts": "2026-01-31
+    10:22:36"}'
+  history: []
+- input: '[System Context]
+
+    Current Time: 2026-01-31 10:27 CST
+
+    Active Window: Google Chrome - Python选什么作为后端比较适合，Django、FastAPI、 Flask?_哔哩哔哩_bilibili
+    🔊
+
+    Active Task: 专注时段
+
+    Task Window: 10:30 - 11:30 | Status=current
+
+    Remaining Minutes: 62
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/8
+
+    [User Input]
+
+    [ROUTINE_CHECK] 当前窗口：Google Chrome - Python选什么作为后端比较适合，Django、FastAPI、 Flask?_哔哩哔哩_bilibili
+    🔊。当前任务：专注时段'
+  run: 1
+  output: 👀 我检测到你当前停留在「哔哩哔哩」，请问这属于「专注时段」的任务范畴吗？还是说我们走神了？
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 61530, "cost": 0.0758, "duration_ms": 10389, "ts": "2026-01-31
+    10:27:48"}'
   history: []

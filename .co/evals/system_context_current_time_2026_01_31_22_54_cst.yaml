@@ -1,0 +1,34 @@
+name: system_context_current_time_2026_01_31_22_54_cst
+created: '2026-01-31 22:54:55'
+updated: '2026-01-31 22:54:55'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: '[System Context]
+
+    Current Time: 2026-01-31 22:54 CST
+
+    Active Window: Front window query timed out.
+
+    Active Task: 深度学习
+
+    Task Window: 00:30 - 01:30 | Status=upcoming
+
+    Plan Path: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json
+
+    Progress: 0/8
+
+    [User Input]
+
+    i wanna eat drink sleep'
+  run: 1
+  output: 'It sounds like you''re ready to wind down. Your next task, "深度学习," is scheduled
+    to start at 00:30, which is in about 36 minutes.
+
+
+    Feel free to rest until then. I''ll be here when you''re ready to start.'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 1704, "cost": 0.0027, "duration_ms": 9943, "ts": "2026-01-31 22:54:55"}'
+  history: []

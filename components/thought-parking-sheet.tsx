@@ -62,11 +62,18 @@ export function ThoughtParkingSheet() {
   const { showThoughtParking, setShowThoughtParking, userState } =
     useAppStore();
 
-  const { messages, sendMessage, status } = useChat({
+  const chatSessionId = useRef(crypto.randomUUID());
+  const { messages, sendMessage, status, setMessages } = useChat({
+    id: chatSessionId.current,
     transport: new TextStreamChatTransport({ api: "/api/chat/stream" }),
   });
 
   const isLoading = status === "streaming" || status === "submitted";
+
+  useEffect(() => {
+    // Always start with a clean chat on mount (no history across devices).
+    setMessages([]);
+  }, [setMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

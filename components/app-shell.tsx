@@ -9,6 +9,7 @@ import { RestingMode } from "./resting-mode";
 import { ThoughtParkingSheet } from "./thought-parking-sheet";
 import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
+import { UserButton } from "@clerk/nextjs";
 
 export function AppShell() {
   const { userState, hasCompletedOnboarding, hasHydrated } = useAppStore();
@@ -50,7 +51,10 @@ export function AppShell() {
               className="hidden h-6 w-6 dark:block"
             />
           </div>
-          <StateIndicator />
+          <div className="flex items-center gap-3">
+            <StateIndicator />
+            <UserButton afterSignOutUrl="/" />
+          </div>
         </div>
       </header>
 

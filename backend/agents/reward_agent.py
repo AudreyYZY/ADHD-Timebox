@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 
 from connectonion import Agent
 
+from agents.model_config import resolve_model
 from tools.plan_tools_v2 import PlanManager
 from tools.reward_tools import RewardToolkit
 
@@ -27,10 +28,11 @@ class RewardAgent:
 
     def __init__(
         self,
-        model: str = DEFAULT_MODEL,
+        model: Optional[str] = None,
         plan_manager: Optional[PlanManager] = None,
         toolkit: Optional[RewardToolkit] = None,
     ):
+        model = resolve_model(model)
         self.plan_manager = plan_manager or PlanManager()
         self.toolkit = toolkit or RewardToolkit(brain_dir=self.plan_manager.plan_dir)
         self.agent = Agent(

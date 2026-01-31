@@ -12,7 +12,7 @@ export interface Task {
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;
-  status: "pending" | "in-progress" | "completed" | "partial" | "stuck";
+  status: "pending" | "pooled" | "in-progress" | "completed" | "partial" | "stuck";
 }
 
 export interface ThoughtEntry {
@@ -152,12 +152,24 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "adhd-timebox-storage",
+      version: 2,
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<AppState>;
+        return {
+          ...state,
+          // Always drop chat history on load.
+          planningMessages: [],
+          parkingMessages: [],
+        } as Partial<AppState>;
+      },
       partialize: (state) => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,
-        tasks: state.tasks,
+        // Persist only unfinished tasks so they survive reloads until completed.
+        tasks: state.tasks.filter((task) => {
+          const status = task.status?.toLowerCase?.() ?? "";
+          return status !== "completed" && status !== "done" && status !== "complete";
+        }),
         thoughts: state.thoughts,
-        planningMessages: state.planningMessages,
-        parkingMessages: state.parkingMessages,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

@@ -61,6 +61,17 @@ export OPENAI_API_KEY="your_api_key_here"
 
 *(The specific model is configured as `co/gemini-2.5-pro` in `backend/main.py`. Ensure you have access or change it to another model in the code).*
 
+#### Frontend Auth (Clerk)
+
+This app uses Clerk for Google/Apple sign-in. You only need Clerk keys in `.env`:
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_publishable_key"
+CLERK_SECRET_KEY="your_secret_key"
+```
+
+Enable Google/Apple in the Clerk dashboard. No provider client IDs are required in this repo.
+
 ### 4. Start the Agent
 
 #### Multi-Agent System (MAS)
@@ -566,4 +577,3 @@ Plan Agent 缺乏“状态持久化感知”。尽管代码已经将用户的计
 
 ADHD Timebox Agent 利用 ConnectOnion 强大的 Memory 能力和灵活的 Multi-Agent 编排，成功将一个“只会看日程表的机械程序”，升级成了一个“有记忆、懂默契、能进化”的聪明Agent。
 感谢 ConnectOnion，让复杂的事情变得简单，让 AI 成为了我大脑的延伸。
-

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from api.dependencies import get_app_state
+from api.dependencies import get_app_state, get_user_id
 from api.errors import error_response
 from core.events import enqueue_event
 
@@ -60,27 +60,29 @@ def _extract_ascii_art(content: str) -> Tuple[str, Optional[str]]:
 
 
 @router.post("/api/chat", response_model=ChatResponse)
-async def chat(payload: ChatRequest, state=Depends(get_app_state)):
-    if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
+async def chat(payload: ChatRequest, state=Depends(get_app_state), user_id=Depends(get_user_id)):
+    try:
+        orchestrator = state.get_orchestrator(user_id)
+    except ValueError:
+        return error_response(401, "INVALID_USER", "Invalid user id")
 
     message = (payload.message or "").strip()
     if not message:
         return error_response(400, "INVALID_MESSAGE", "message cannot be empty")
 
-    plan_dir = state.orchestrator.plan_manager.plan_dir
+    plan_dir = orchestrator.plan_manager.plan_dir
     before_mtime, _ = _latest_plan_snapshot(plan_dir)
 
     try:
-        content = await run_in_threadpool(state.orchestrator.route, message)
+        content = await run_in_threadpool(orchestrator.route, message)
     except Exception as exc:
         return error_response(500, "ORCHESTRATOR_ERROR", "Chat processing failed", str(exc))
 
     after_mtime, newest_path = _latest_plan_snapshot(plan_dir)
     tasks_updated = before_mtime != after_mtime and after_mtime is not None
 
-    status = "CONTINUE" if state.orchestrator.locked_agent else "FINISHED"
-    agent = state.orchestrator.last_agent or "orchestrator"
+    status = "CONTINUE" if orchestrator.locked_agent else "FINISHED"
+    agent = orchestrator.last_agent or "orchestrator"
 
     clean_content, ascii_art = _extract_ascii_art(content or "")
 
@@ -95,7 +97,7 @@ async def chat(payload: ChatRequest, state=Depends(get_app_state)):
                 tasks = json.load(f)
             tasks_count = len(tasks) if isinstance(tasks, list) else 0
             enqueue_event(
-                state.event_queue,
+                state.get_event_queue(user_id),
                 state.event_loop,
                 {
                     "event": "plan_updated",

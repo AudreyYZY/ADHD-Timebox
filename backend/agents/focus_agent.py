@@ -6,6 +6,7 @@ from typing import Optional
 
 from connectonion import Agent, Memory
 
+from agents.model_config import resolve_model
 from tools.focus_tools import ContextTool, FocusToolkit
 from tools.parking_tools import ParkingService, ParkingToolkit
 from tools.plan_tools_v2 import PlanManager
@@ -32,7 +33,7 @@ class FocusAgent:
 
     def __init__(
         self,
-        model: str = DEFAULT_MODEL,
+        model: Optional[str] = None,
         plan_manager: Optional[PlanManager] = None,
         context_tool: Optional[ContextTool] = None,
         toolkit: Optional[FocusToolkit] = None,
@@ -40,6 +41,7 @@ class FocusAgent:
         reward_toolkit: Optional[RewardToolkit] = None,
         memory: Optional[Memory] = None,
     ):
+        model = resolve_model(model)
         self.plan_manager = plan_manager or PlanManager()
         self.context_tool = context_tool or ContextTool(
             plan_dir=self.plan_manager.plan_dir

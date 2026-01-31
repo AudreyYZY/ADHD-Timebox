@@ -11,12 +11,123 @@ import { useAppStore, type Task } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send, Play, Clock } from "lucide-react";
 
-function getMessageText(message: { parts?: Array<{ type: string; text?: string }> }): string {
+function getMessageText(message: {
+  parts?: Array<{ type: string; text?: string }>;
+  content?: string;
+}): string {
+  if (typeof message.content === "string" && message.content.trim()) {
+    return message.content;
+  }
   if (!message.parts || !Array.isArray(message.parts)) return "";
   return message.parts
     .filter((p): p is { type: "text"; text: string } => p.type === "text")
     .map((p) => p.text)
     .join("");
+}
+
+function normalizeTaskTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const timeRangeRegex =
+  /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|–|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i;
+
+function toMinutes(hour: number, minute: number, meridiem?: string): number {
+  let h = hour;
+  if (meridiem) {
+    const normalized = meridiem.toLowerCase();
+    if (normalized === "pm" && h < 12) h += 12;
+    if (normalized === "am" && h === 12) h = 0;
+  }
+  return h * 60 + minute;
+}
+
+function parseTimeRangeMinutes(line: string): number | null {
+  const match = line.match(timeRangeRegex);
+  if (!match) return null;
+
+  const startHour = Number(match[1]);
+  const startMin = Number(match[2] ?? "0");
+  const startMeridiem = match[3]?.toLowerCase();
+  const endHour = Number(match[4]);
+  const endMin = Number(match[5] ?? "0");
+  const endMeridiem = match[6]?.toLowerCase();
+  const fallbackMeridiem = startMeridiem ?? endMeridiem;
+
+  const start = toMinutes(startHour, startMin, startMeridiem ?? fallbackMeridiem);
+  const end = toMinutes(endHour, endMin, endMeridiem ?? fallbackMeridiem);
+
+  const diff = end - start;
+  return diff > 0 ? diff : null;
+}
+
+function parseDurationMinutes(line: string): number | null {
+  const hoursMatch = line.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)\b/i);
+  const minutesMatch = line.match(
+    /(\d+(?:\.\d+)?)\s*(?:m|min|mins|minute|minutes)\b/i
+  );
+
+  let total = 0;
+  if (hoursMatch) total += Math.round(parseFloat(hoursMatch[1]) * 60);
+  if (minutesMatch) total += Math.round(parseFloat(minutesMatch[1]));
+
+  return total > 0 ? total : null;
+}
+
+function stripLeadingMarkers(line: string): string {
+  return line
+    .replace(/^(\d+[\).\]]|[-*•])\s+/, "")
+    .replace(/^(task|todo|to do|next)\s*[:\-]\s*/i, "")
+    .trim();
+}
+
+function stripTimeInfo(line: string): string {
+  let cleaned = line.replace(timeRangeRegex, "").trim();
+  cleaned = cleaned.replace(
+    /\bfor\s+\d+(?:\.\d+)?\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes)\b/gi,
+    ""
+  );
+  cleaned = cleaned.replace(
+    /\s*[-–(]?\s*\d+(?:\.\d+)?\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes)\s*\)?\s*$/i,
+    ""
+  );
+  cleaned = cleaned.replace(/\s+/g, " ").replace(/[.]+$/, "").trim();
+  return cleaned;
+}
+
+function extractTaskLines(text: string): string[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const bulletPattern = /^(\d+[\).\]]|[-*•])\s+/;
+  const bulletLines = lines.filter((line) => bulletPattern.test(line));
+  if (bulletLines.length > 0) return bulletLines;
+
+  const labeledLines = lines.filter((line) => /^(task|todo|to do|next)\s*[:\-]/i.test(line));
+  return labeledLines;
+}
+
+function extractTasksFromAssistant(text: string): Array<{ title: string; duration: number }> {
+  const candidates = extractTaskLines(text);
+  const results: Array<{ title: string; duration: number }> = [];
+  const seen = new Set<string>();
+
+  candidates.forEach((line) => {
+    const base = stripLeadingMarkers(line);
+    const title = stripTimeInfo(base);
+    const normalized = normalizeTaskTitle(title);
+    if (!normalized || normalized.length < 2 || seen.has(normalized)) return;
+    const duration = parseTimeRangeMinutes(line) ?? parseDurationMinutes(line) ?? 15;
+    results.push({ title, duration });
+    seen.add(normalized);
+  });
+
+  return results;
 }
 
 function PendingIndicator() {
@@ -54,9 +165,19 @@ export function PlanningMode() {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { setCurrentTask, setUserState, setTimeRemaining, setIsTimerRunning, addTask } = useAppStore();
+  const {
+    setCurrentTask,
+    setUserState,
+    setTimeRemaining,
+    setIsTimerRunning,
+    addTask,
+    tasks,
+  } = useAppStore();
 
-  const { messages, sendMessage, status } = useChat({
+  const chatSessionId = useRef(crypto.randomUUID());
+  const lastProcessedAssistantId = useRef<string | null>(null);
+  const { messages, sendMessage, status, setMessages } = useChat({
+    id: chatSessionId.current,
     transport: new TextStreamChatTransport({ api: "/api/chat/stream" }),
   });
 
@@ -68,8 +189,40 @@ export function PlanningMode() {
   const shouldBlockEnterSend = () => Date.now() - lastCompositionEndRef.current < 80;
 
   useEffect(() => {
+    // Always start with a clean chat on mount (no history across devices).
+    setMessages([]);
+  }, [setMessages]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (status !== "idle") return;
+    const lastAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    if (!lastAssistant || lastAssistant.id === lastProcessedAssistantId.current) return;
+
+    const text = getMessageText(lastAssistant);
+    lastProcessedAssistantId.current = lastAssistant.id;
+    if (!text.trim()) return;
+
+    const parsedTasks = extractTasksFromAssistant(text);
+    if (parsedTasks.length === 0) return;
+
+    const existingTitles = new Set(tasks.map((task) => normalizeTaskTitle(task.title)));
+    parsedTasks.forEach((task) => {
+      const normalized = normalizeTaskTitle(task.title);
+      if (existingTitles.has(normalized)) return;
+      existingTitles.add(normalized);
+      addTask({
+        id: crypto.randomUUID(),
+        title: task.title,
+        duration: task.duration,
+        createdAt: new Date(),
+        status: "pooled",
+      });
+    });
+  }, [status, messages, tasks, addTask]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

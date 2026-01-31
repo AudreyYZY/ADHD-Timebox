@@ -55,3 +55,6 @@ __pycache__/
 .co/history/
 co-vibecoding-principles-docs-contexts-all-in-one.md
 todo.md
+
+# clerk configuration (can include secrets)
+/.clerk/

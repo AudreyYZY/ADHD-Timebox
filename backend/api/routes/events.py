@@ -10,7 +10,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
-from api.dependencies import get_app_state
+from api.dependencies import get_app_state, get_user_id
 from api.errors import error_response
 
 router = APIRouter()
@@ -27,9 +27,13 @@ def _format_sse(event: Dict[str, Any]) -> str:
 
 
 @router.get("/api/events")
-async def sse_events(request: Request, state=Depends(get_app_state)):
-    if state.event_queue is None:
-        return error_response(503, "SERVICE_NOT_READY", "Event queue not ready")
+async def sse_events(
+    request: Request, state=Depends(get_app_state), user_id=Depends(get_user_id)
+):
+    try:
+        queue = state.get_event_queue(user_id)
+    except ValueError:
+        return error_response(401, "INVALID_USER", "Invalid user id")
 
     heartbeat_interval = 30
 
@@ -38,9 +42,7 @@ async def sse_events(request: Request, state=Depends(get_app_state)):
             if await request.is_disconnected():
                 break
             try:
-                event = await asyncio.wait_for(
-                    state.event_queue.get(), timeout=heartbeat_interval
-                )
+                event = await asyncio.wait_for(queue.get(), timeout=heartbeat_interval)
                 yield _format_sse(event)
             except asyncio.TimeoutError:
                 heartbeat = {

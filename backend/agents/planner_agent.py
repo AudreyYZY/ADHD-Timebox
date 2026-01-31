@@ -12,6 +12,7 @@ from typing import Optional
 
 from connectonion import Agent, GoogleCalendar, Memory
 
+from agents.model_config import resolve_model
 from tools.plan_tools_v2 import PlanManager
 
 
@@ -52,11 +53,12 @@ class PlannerAgent:
 
     def __init__(
         self,
-        model: str = DEFAULT_MODEL,
+        model: Optional[str] = None,
         plan_manager: Optional[PlanManager] = None,
         calendar: Optional[object] = None,
         memory: Optional[Memory] = None,
     ):
+        model = resolve_model(model)
         self.calendar = calendar or self._init_calendar()
         self.plan_manager = plan_manager or PlanManager(calendar=self.calendar)
         self.memory = memory

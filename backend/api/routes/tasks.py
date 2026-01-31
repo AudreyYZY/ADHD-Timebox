@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
-from api.dependencies import get_app_state
+from api.dependencies import get_app_state, get_user_id
 from api.errors import error_response
 from core.events import enqueue_event
 from tools.reward_tools import RewardToolkit
@@ -44,12 +44,18 @@ def _normalize_task(task: dict) -> dict:
 
 
 @router.get("/api/tasks")
-async def list_tasks(date: Optional[str] = Query(None), state=Depends(get_app_state)):
-    if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
+async def list_tasks(
+    date: Optional[str] = Query(None),
+    state=Depends(get_app_state),
+    user_id=Depends(get_user_id),
+):
+    try:
+        orchestrator = state.get_orchestrator(user_id)
+    except ValueError:
+        return error_response(401, "INVALID_USER", "Invalid user id")
 
     today = datetime.date.today()
-    plan_manager = state.orchestrator.plan_manager
+    plan_manager = orchestrator.plan_manager
     plan_date, date_err = plan_manager._parse_plan_date(date, today)
     if date_err:
         return error_response(400, "INVALID_DATE", "Invalid date format", date_err)
@@ -78,14 +84,17 @@ async def update_task(
     payload: TaskStatusUpdate,
     date: Optional[str] = Query(None),
     state=Depends(get_app_state),
+    user_id=Depends(get_user_id),
 ):
-    if state.orchestrator is None:
-        return error_response(503, "SERVICE_NOT_READY", "Service not ready")
+    try:
+        orchestrator = state.get_orchestrator(user_id)
+    except ValueError:
+        return error_response(401, "INVALID_USER", "Invalid user id")
 
     if not payload.status:
         return error_response(400, "INVALID_STATUS", "status cannot be empty")
 
-    plan_manager = state.orchestrator.plan_manager
+    plan_manager = orchestrator.plan_manager
     today = datetime.date.today()
     plan_date, date_err = plan_manager._parse_plan_date(date, today)
     if date_err:
@@ -112,7 +121,7 @@ async def update_task(
 
     reward = None
     if status in {"done", "completed", "complete"}:
-        toolkit = state.orchestrator.reward_agent.toolkit
+        toolkit = orchestrator.reward_agent.toolkit
         try:
             reward = toolkit.generate_micro_reward(target.get("title") or task_id)
         except Exception:
@@ -121,7 +130,7 @@ async def update_task(
             )
 
         enqueue_event(
-            state.event_queue,
+            state.get_event_queue(user_id),
             state.event_loop,
             {
                 "event": "task_completed",

@@ -79,10 +79,29 @@ export function FocusMode() {
   useEffect(() => {
     if (timeRemaining === 0 && isTimerRunning && currentTask) {
       setIsTimerRunning(false);
+      updateTask(currentTask.id, {
+        status: "pooled",
+        startedAt: undefined,
+        completedAt: undefined,
+      });
+      setCurrentTask({
+        ...currentTask,
+        status: "pooled",
+        startedAt: undefined,
+        completedAt: undefined,
+      });
       // Show end-of-timebox ritual (handled by parent via state)
       setUserState("interrupted");
     }
-  }, [timeRemaining, isTimerRunning, currentTask, setIsTimerRunning, setUserState]);
+  }, [
+    timeRemaining,
+    isTimerRunning,
+    currentTask,
+    setIsTimerRunning,
+    setUserState,
+    updateTask,
+    setCurrentTask,
+  ]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -103,7 +122,17 @@ export function FocusMode() {
 
   const handleStopTask = () => {
     if (currentTask) {
-      updateTask(currentTask.id, { status: "partial" });
+      updateTask(currentTask.id, {
+        status: "pooled",
+        startedAt: undefined,
+        completedAt: undefined,
+      });
+      setCurrentTask({
+        ...currentTask,
+        status: "pooled",
+        startedAt: undefined,
+        completedAt: undefined,
+      });
     }
     setIsTimerRunning(false);
     setUserState("interrupted");

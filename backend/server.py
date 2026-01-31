@@ -29,11 +29,18 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup() -> None:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        env_path = os.path.join(base_dir, ".env")
-        load_dotenv(env_path)
+        project_root = os.path.abspath(os.path.join(base_dir, ".."))
+        load_dotenv(os.path.join(project_root, ".env"))
+        load_dotenv(os.path.join(base_dir, ".env"), override=True)
 
-        if not os.getenv("OPENONION_API_KEY"):
-            raise RuntimeError("OPENONION_API_KEY is not set. Check backend/.env.")
+        if not (
+            os.getenv("OPENONION_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
+        ):
+            raise RuntimeError(
+                "No LLM API key found. Set OPENONION_API_KEY, GEMINI_API_KEY, or OPENAI_API_KEY."
+            )
 
         app_state.event_loop = asyncio.get_running_loop()
         app_state.event_queue = asyncio.Queue()
