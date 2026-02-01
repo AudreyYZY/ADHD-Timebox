@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { api } from "@/app/utils/api";
+import { toStoreTask } from "@/app/utils/taskAdapter";
 import { useAppStore } from "@/lib/store";
 import { StateIndicator } from "./state-indicator";
 import { PlanningMode } from "./planning-mode";
@@ -9,10 +12,71 @@ import { RestingMode } from "./resting-mode";
 import { ThoughtParkingSheet } from "./thought-parking-sheet";
 import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 
 export function AppShell() {
-  const { userState, hasCompletedOnboarding, hasHydrated } = useAppStore();
+  const { userId } = useUser();
+  const lastUserIdRef = useRef<string | null>(null);
+  const {
+    userState,
+    hasCompletedOnboarding,
+    hasHydrated,
+    setTasks,
+    clearPlanningMessages,
+    clearParkingMessages,
+    setCurrentTask,
+    setTimeRemaining,
+    setIsTimerRunning,
+    setUserState,
+  } = useAppStore();
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const lastUserId = lastUserIdRef.current;
+    if (lastUserId && lastUserId !== userId) {
+      localStorage.removeItem("adhd-timebox-storage");
+      setTasks([]);
+      setCurrentTask(null);
+      clearPlanningMessages();
+      clearParkingMessages();
+      setTimeRemaining(0);
+      setIsTimerRunning(false);
+      setUserState("planning");
+    }
+    lastUserIdRef.current = userId ?? null;
+  }, [
+    hasHydrated,
+    userId,
+    setTasks,
+    clearPlanningMessages,
+    clearParkingMessages,
+    setCurrentTask,
+    setTimeRemaining,
+    setIsTimerRunning,
+    setUserState,
+  ]);
+
+  useEffect(() => {
+    if (!hasHydrated || !userId) return;
+
+    let isMounted = true;
+
+    const loadTasks = async () => {
+      try {
+        const backendTasks = await api.getTasks(userId ?? undefined);
+        if (!isMounted) return;
+        setTasks(backendTasks.map(toStoreTask));
+      } catch (error) {
+        console.error("Failed to load tasks from backend", error);
+      }
+    };
+
+    loadTasks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hasHydrated, setTasks]);
 
   if (!hasHydrated) {
     return <div className="min-h-screen bg-background" aria-hidden="true" />;

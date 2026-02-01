@@ -1,34 +1,59 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000/api";
 const LOCAL_API_BASE = "/api";
 
 export interface ChatResponse {
-  response: string;
+  content: string;
   status: string;
+  agent: string;
+  tasks_updated: boolean;
+  ascii_art?: string | null;
 }
 
 export interface BackendTask {
   id: string;
   title: string;
-  priority: string;
-  estimatedMinutes?: number;
-  cognitiveLoad?: string;
+  start?: string | null;
+  end?: string | null;
+  type?: string;
   status: string;
+  google_event_id?: string | null;
 }
 
 export interface RecommendationResponse {
   taskId: string;
   durationMinutes: number;
   reason: string;
-  preferLowCognitiveLoad: bool;
+  preferLowCognitiveLoad: boolean;
 }
 
+export interface ParkingResponse {
+  content: string;
+  status: string;
+  agent: string;
+}
+
+interface TasksResponse {
+  date: string;
+  tasks: BackendTask[];
+  summary?: {
+    total: number;
+    done: number;
+    pending: number;
+  };
+}
+
+const withUserHeader = (userId?: string) =>
+  userId ? { "X-User-Id": userId } : {};
+
 export const api = {
-  chat: async (message: string): Promise<ChatResponse> => {
-    const res = await fetch(`${API_BASE_URL}/chat`, {
+  chat: async (message: string, userId?: string): Promise<ChatResponse> => {
+    const res = await fetch(`${LOCAL_API_BASE}/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...withUserHeader(userId),
+      },
       body: JSON.stringify({ message }),
+      credentials: "include",
     });
     if (!res.ok) {
       throw new Error("Chat failed");
@@ -36,34 +61,57 @@ export const api = {
     return res.json();
   },
 
-  getTasks: async (): Promise<BackendTask[]> => {
-    const res = await fetch(`${LOCAL_API_BASE}/tasks`);
+  getTasks: async (userId?: string): Promise<BackendTask[]> => {
+    const res = await fetch(`${LOCAL_API_BASE}/tasks`, {
+      headers: withUserHeader(userId),
+      credentials: "include",
+    });
     if (!res.ok) {
       throw new Error("Failed to fetch tasks");
     }
-    return res.json();
-  },
-
-  getRecommendation: async (context: any): Promise<RecommendationResponse> => {
-    const res = await fetch(`${API_BASE_URL}/recommend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ context }),
-    });
-    if (!res.ok) {
-      throw new Error("Failed to get recommendation");
+    const data = (await res.json()) as TasksResponse;
+    if (!data || !Array.isArray(data.tasks)) {
+      return [];
     }
-    return res.json();
+    return data.tasks;
   },
 
-  updateTaskStatus: async (taskId: string, status: string): Promise<void> => {
+  updateTaskStatus: async (
+    taskId: string,
+    status: string,
+    userId?: string
+  ): Promise<void> => {
     const res = await fetch(`${LOCAL_API_BASE}/tasks/${taskId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...withUserHeader(userId),
+      },
       body: JSON.stringify({ status }),
+      credentials: "include",
     });
     if (!res.ok) {
       throw new Error("Failed to update task status");
     }
+  },
+
+  parkThought: async (
+    message: string,
+    thoughtType?: "search" | "memo" | "todo",
+    userId?: string
+  ): Promise<ParkingResponse> => {
+    const res = await fetch(`${LOCAL_API_BASE}/parking`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...withUserHeader(userId),
+      },
+      body: JSON.stringify({ message, thought_type: thoughtType }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to park thought");
+    }
+    return res.json();
   },
 };

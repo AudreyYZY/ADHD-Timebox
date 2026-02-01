@@ -9,14 +9,19 @@ const TASKS_URL = `${BACKEND_BASE_URL}/api/tasks`;
 
 export async function GET(req: Request) {
   const { userId } = auth();
-  if (!userId) {
+  const headerUserId = req.headers.get("x-user-id");
+  const resolvedUserId =
+    userId ??
+    (process.env.NODE_ENV === "development" ? headerUserId : null);
+
+  if (!resolvedUserId) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   const url = new URL(req.url);
   const backendUrl = `${TASKS_URL}${url.search}`;
   const backendResponse = await fetch(backendUrl, {
-    headers: { "X-User-Id": userId },
+    headers: { "X-User-Id": resolvedUserId },
     cache: "no-store",
   });
 

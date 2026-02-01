@@ -52,6 +52,7 @@ interface AppState {
 
   // Tasks history
   tasks: Task[];
+  setTasks: (tasks: Task[]) => void;
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
 
@@ -65,6 +66,8 @@ interface AppState {
   parkingMessages: ChatMessage[];
   addPlanningMessage: (message: ChatMessage) => void;
   addParkingMessage: (message: ChatMessage) => void;
+  clearPlanningMessages: () => void;
+  clearParkingMessages: () => void;
 
   // Timer
   timeRemaining: number; // in seconds
@@ -102,6 +105,7 @@ export const useAppStore = create<AppState>()(
 
       // Tasks
       tasks: [],
+      setTasks: (tasks) => set({ tasks }),
       addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
       updateTask: (id, updates) =>
         set((state) => ({
@@ -130,6 +134,8 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           parkingMessages: [...state.parkingMessages, message],
         })),
+      clearPlanningMessages: () => set({ planningMessages: [] }),
+      clearParkingMessages: () => set({ parkingMessages: [] }),
 
       // Timer
       timeRemaining: 0,

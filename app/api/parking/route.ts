@@ -5,11 +5,9 @@ const RAW_BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ??
   "http://127.0.0.1:8000";
 const BACKEND_BASE_URL = RAW_BACKEND_URL.replace(/\/api\/?$/, "");
+const PARKING_URL = `${BACKEND_BASE_URL}/api/parking`;
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { taskId: string } }
-) {
+export async function POST(req: Request) {
   const { userId } = auth();
   const headerUserId = req.headers.get("x-user-id");
   const resolvedUserId =
@@ -20,12 +18,9 @@ export async function PATCH(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const url = new URL(req.url);
-  const backendUrl = `${BACKEND_BASE_URL}/api/tasks/${params.taskId}${url.search}`;
   const payload = await req.text();
-
-  const backendResponse = await fetch(backendUrl, {
-    method: "PATCH",
+  const backendResponse = await fetch(PARKING_URL, {
+    method: "POST",
     headers: { "Content-Type": "application/json", "X-User-Id": resolvedUserId },
     body: payload,
   });

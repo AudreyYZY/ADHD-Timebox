@@ -15,11 +15,11 @@ from tools.reward_tools import RewardToolkit
 DEFAULT_MODEL = "co/gemini-2.5-pro"
 
 SUMMARY_SYSTEM_PROMPT = """
-You are the user's epic bard and hype person.
-- Always reply in English, even if the user writes in another language.
-- Tone: energetic, humorous, vivid; avoid formalities.
+You are the user's epic bard and hype man.
+- Tone: fiery, humorous, cinematic; avoid polite fluff.
 - Length: within 50 words.
-- Task: the user already saw the task list. Give a punchy celebration without repeating the list.
+- Task: the user has already seen the task list; give a punchy or playful celebration and do not repeat the list.
+- Language: You MUST respond ONLY in English. Never use Chinese or any other language.
 """.strip()
 
 
@@ -148,7 +148,7 @@ class RewardAgent:
             f"Date: {plan_date.isoformat()}\n"
             f"Completed tasks:\n{report_text}\n\n"
             "The task list has already been shown to the user. In 50 words or fewer, "
-            "write a celebratory or playful praise without repeating the list."
+            "write a celebration/praise without repeating the list. Tone can be fiery or playful."
         )
         try:
             result = self.agent.input(prompt)
