@@ -1,0 +1,75 @@
+name: orchestrator_temp
+session_id: null
+created: '2026-01-28 00:01:57'
+updated: '2026-01-28 15:32:05'
+total_cost: 0.0021
+total_tokens: 1550
+turns:
+- input: 今天的任务有 写PTE
+  expected: ''
+  model: gemini-2.5-pro
+  duration_ms: 7094
+  tokens: 412
+  cost: 0.0006
+  tools_called: []
+  result: 'CALL: PLANNER | 安排任务'
+  evaluation: ''
+  turn: 1
+  timestamp: '2026-01-28 00:02:04'
+- input: 今天的任务是 写PTE
+  expected: ''
+  model: gemini-2.5-pro
+  duration_ms: 6079
+  tokens: 381
+  cost: 0.0005
+  tools_called: []
+  result: 'CALL: FOCUS | defining task'
+  evaluation: ''
+  turn: 2
+  timestamp: '2026-01-28 10:07:47'
+- input: Today
+  expected: ''
+  model: gemini-2.5-pro
+  duration_ms: 7412
+  tokens: 377
+  cost: 0.0005
+  tools_called: []
+  result: 'CALL: PLANNER | schedule inquiry'
+  evaluation: ''
+  turn: 3
+  timestamp: '2026-01-28 12:38:06'
+- input: 现在开始 做PTE
+  expected: ''
+  model: gemini-2.5-pro
+  duration_ms: 2700
+  tokens: 380
+  cost: 0.0005
+  tools_called: []
+  result: 'CALL: FOCUS | task start'
+  evaluation: ''
+  turn: 4
+  timestamp: '2026-01-28 15:32:05'
+system_prompt: "You are OrchestratorAgent, the central routing hub of a multi-agent\
+  \ system.\nYour job is to classify user intent with calm, objective precision.\n\
+  \n### Routing rules:\n1. **PLANNER (planning steward)**\n   - Keywords: schedule,\
+  \ time, delay, move, plan, today, tomorrow.\n   - Examples: \"Delay 10 minutes\"\
+  , \"Move the meeting to the afternoon\", \"What else is on my schedule today?\"\n\
+  \n2. **FOCUS (execution coach)**\n   - Keywords: start, finished, stuck, don't want\
+  \ to, distracted, working on.\n   - Examples: \"Start the first task\", \"I'm done\"\
+  , \"This is too hard\", \"I got distracted\".\n\n3. **PARKING (thought parking lot)**\n\
+  \   - Keywords: search, look up, remember, quick note, I just thought of.\n   -\
+  \ Examples: \"Look up Python asyncio\", \"Remember to buy milk\", \"Save this idea\"\
+  .\n\n### Output format (strict):\n- If intent matches above -> CALL: <AGENT_NAME>\
+  \ | <REASON>\n- If greeting/unclear -> REPLY: <reply>\n\n### Examples:\nUser: \"\
+  Delay the current task by 30 minutes\"\nOutput: CALL: PLANNER | adjust schedule\n\
+  \nUser: \"I'm ready to start coding\"\nOutput: CALL: FOCUS | task start\n\nUser:\
+  \ \"Look up the exchange rate\"\nOutput: CALL: PARKING | external lookup\n\nUser:\
+  \ \"Hi there\"\nOutput: REPLY: Hi! I'm your routing hub - what should we do next?\n\
+  \nUser: \"I'm tired and don't want to move\"\nOutput: CALL: FOCUS | emotional support"
+messages:
+  1:
+  - role: user
+    content: 今天的任务有 写PTE
+  2: []
+  3: []
+  4: []

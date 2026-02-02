@@ -1,0 +1,14 @@
+name: i_wanna_study_math_and_english
+created: '2026-02-01 16:25:01'
+updated: '2026-02-01 16:25:01'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: i wanna study math and English
+  run: 1
+  output: 'CALL: FOCUS | task execution intent'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 704, "cost": 0.0009, "duration_ms": 5916, "ts": "2026-02-01 16:25:01"}'
+  history: []

@@ -38,6 +38,7 @@ Current scopes:
 Please authorize Google Calendar access:
   co auth google
 [00:18:13] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 4
+<<<<<<< HEAD
 [10:19:33] create_daily_plan (Smart Merge) 被调用！参数类型: <class 'str'>
 [10:19:33] 原始数据摘要: [{"title":"专注时段","start":"2026-01-31 10:30","end":"2026-01-31 11:30","type":"work","status":"pending...
 [10:19:33] [Calendar] 处于 Fallback 模式: Missing 'calendar' scope.
@@ -68,3 +69,29 @@ Please authorize Google Calendar access:
 [23:02:37] >>> plan_tools_v2 module loaded <<<
 [23:05:39] >>> plan_tools_v2 module loaded <<<
 [23:05:40] >>> plan_tools_v2 module loaded <<<
+=======
+[01:33:08] >>> plan_tools_v2 module loaded <<<
+[01:33:09] >>> plan_tools_v2 module loaded <<<
+[01:36:03] >>> plan_tools_v2 module loaded <<<
+[01:36:05] >>> plan_tools_v2 module loaded <<<
+[01:36:28] >>> plan_tools_v2 module loaded <<<
+[01:37:08] >>> plan_tools_v2 module loaded <<<
+[01:37:14] >>> plan_tools_v2 module loaded <<<
+[01:37:22] >>> plan_tools_v2 module loaded <<<
+>>>>>>> ae6867d8e3e89635cb1da7ffb8fa3eebb93203f8
+[00:02:23] >>> plan_tools_v2 module loaded <<<
+[00:12:42] >>> plan_tools_v2 module loaded <<<
+[00:12:43] >>> plan_tools_v2 module loaded <<<
+[00:14:24] >>> plan_tools_v2 module loaded <<<
+[00:15:58] >>> plan_tools_v2 module loaded <<<
+[00:17:46] >>> plan_tools_v2 module loaded <<<
+[00:17:47] >>> plan_tools_v2 module loaded <<<
+[23:17:39] >>> plan_tools_v2 module loaded <<<
+[23:17:39] >>> plan_tools_v2 module loaded <<<
+[23:23:23] create_daily_plan (Smart Merge) called. Param type: <class 'list'>
+[23:23:23] Raw data preview: [{'title': 'Study', 'status': 'pending', 'type': 'work', 'start': '2026-02-02 23:23', 'end': '2026-0...
+[23:23:23] [Calendar] Fallback mode: Missing 'calendar' scope.
+Current scopes: 
+Please authorize Google Calendar access:
+  co auth google
+[23:23:23] Writing file: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/users/user_391WwXHS4ew1jRzMSeCNPWpwoYz/daily_tasks_2026-02-02.json, tasks: 1

@@ -1,0 +1,14 @@
+name: i_want_to_study_for_1min
+created: '2026-02-02 23:37:02'
+updated: '2026-02-02 23:37:02'
+runs: 1
+model: gemini-2.5-pro
+turns:
+- input: i want to study for 1min
+  run: 1
+  output: 'CALL: FOCUS | Task start'
+  tools_called: []
+  expected: ''
+  evaluation: ''
+  meta: '{"tokens": 705, "cost": 0.0009, "duration_ms": 7393, "ts": "2026-02-02 23:37:02"}'
+  history: []
