@@ -24,6 +24,7 @@ export function FocusMode() {
     timeRemaining,
     updateTask,
     setShowThoughtParking,
+    clearParkingMessages,
   } = useAppStore();
 
   // Gentle check-in messages
@@ -79,6 +80,8 @@ export function FocusMode() {
   useEffect(() => {
     if (timeRemaining === 0 && isTimerRunning && currentTask) {
       setIsTimerRunning(false);
+      setShowThoughtParking(false);
+      clearParkingMessages();
       updateTask(currentTask.id, {
         status: "pooled",
         startedAt: undefined,
@@ -101,6 +104,8 @@ export function FocusMode() {
     setUserState,
     updateTask,
     setCurrentTask,
+    setShowThoughtParking,
+    clearParkingMessages,
   ]);
 
   // Cleanup timeout on unmount
@@ -122,6 +127,8 @@ export function FocusMode() {
 
   const handleStopTask = () => {
     if (currentTask) {
+      setShowThoughtParking(false);
+      clearParkingMessages();
       updateTask(currentTask.id, {
         status: "pooled",
         startedAt: undefined,
@@ -150,6 +157,7 @@ export function FocusMode() {
 
   const handleNeedBreak = () => {
     setShowCheckin(false);
+    setShowThoughtParking(false);
     setIsTimerRunning(false);
     setUserState("resting");
   };

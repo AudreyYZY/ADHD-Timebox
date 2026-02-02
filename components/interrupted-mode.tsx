@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { getRandomReward } from "@/lib/rewards";
@@ -8,10 +8,13 @@ import { CheckCircle, Circle, AlertCircle, ArrowRight, RotateCcw, Coffee } from 
 
 type TaskOutcome = "finished" | "partial" | "stuck" | null;
 
+const COMPLETION_PATTERN = /\b(done|finished|completed|complete|task\s+completed|all\s+done)\b/i;
+
 export function InterruptedMode() {
   const [selectedOutcome, setSelectedOutcome] = useState<TaskOutcome>(null);
   const [showReward, setShowReward] = useState(false);
   const [rewardMessage, setRewardMessage] = useState("");
+  const [quickInput, setQuickInput] = useState("");
 
   const {
     currentTask,
@@ -19,6 +22,9 @@ export function InterruptedMode() {
     setUserState,
     updateTask,
     setTimeRemaining,
+    clearPlanningMessages,
+    clearParkingMessages,
+    setShowThoughtParking,
   } = useAppStore();
 
   const handleOutcomeSelect = (outcome: TaskOutcome) => {
@@ -33,20 +39,31 @@ export function InterruptedMode() {
     setShowReward(true);
   };
 
-  const handleContinue = () => {
-    if (currentTask && selectedOutcome) {
-      const completed = selectedOutcome === "finished";
+  const finalizeOutcome = (outcome: TaskOutcome) => {
+    if (currentTask && outcome) {
+      const completed = outcome === "finished";
       updateTask(currentTask.id, {
         status: completed ? "completed" : "pooled",
         completedAt: completed ? new Date() : undefined,
         startedAt: completed ? currentTask.startedAt : undefined,
       });
+      if (completed) {
+        clearPlanningMessages();
+      }
+      clearParkingMessages();
     }
+    setShowThoughtParking(false);
     setCurrentTask(null);
     setTimeRemaining(0);
     setUserState("planning");
     setSelectedOutcome(null);
     setShowReward(false);
+    setQuickInput("");
+  };
+
+  const handleContinue = () => {
+    if (!selectedOutcome) return;
+    finalizeOutcome(selectedOutcome);
   };
 
   const handleTryAgain = () => {
@@ -62,6 +79,18 @@ export function InterruptedMode() {
 
   const handleTakeBreak = () => {
     setUserState("resting");
+  };
+
+  const handleQuickSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    const text = quickInput.trim();
+    if (!text) return;
+    if (COMPLETION_PATTERN.test(text)) {
+      handleOutcomeSelect("finished");
+      finalizeOutcome("finished");
+      return;
+    }
+    setQuickInput("");
   };
 
   if (!currentTask) {
@@ -91,6 +120,15 @@ export function InterruptedMode() {
                 How did it go with "{currentTask.title}"?
               </p>
             </div>
+
+            <form onSubmit={handleQuickSubmit} className="mb-6">
+              <input
+                value={quickInput}
+                onChange={(e) => setQuickInput(e.target.value)}
+                placeholder='Type "task completed" and press Enter'
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </form>
 
             {/* Outcome options */}
             <div className="space-y-3 mb-8">

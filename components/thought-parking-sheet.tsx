@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppStore, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send, ParkingCircle } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 
 const createMessage = (
   role: ChatMessage["role"],
@@ -56,10 +56,11 @@ function PendingIndicator() {
 }
 
 export function ThoughtParkingSheet() {
-  const { userId } = useUser();
+  const { userId, isLoaded, isSignedIn } = useAuth();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const authReady = isLoaded && isSignedIn;
   const {
     showThoughtParking,
     setShowThoughtParking,
@@ -75,6 +76,13 @@ export function ThoughtParkingSheet() {
   }, [clearParkingMessages]);
 
   useEffect(() => {
+    if (userState !== "focusing") {
+      setShowThoughtParking(false);
+      clearParkingMessages();
+    }
+  }, [userState, setShowThoughtParking, clearParkingMessages]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [parkingMessages, isLoading]);
 
@@ -82,13 +90,23 @@ export function ThoughtParkingSheet() {
     e.preventDefault();
     const messageText = input.trim();
     if (!messageText || isLoading) return;
+    if (!authReady) {
+      addParkingMessage(
+        createMessage("assistant", "Please sign in to continue.")
+      );
+      return;
+    }
 
     setInput("");
     addParkingMessage(createMessage("user", messageText));
     setIsLoading(true);
 
     try {
-      const response = await api.parkThought(messageText, undefined, userId ?? undefined);
+      const response = await api.parkThought(
+        messageText,
+        undefined,
+        userId ?? undefined
+      );
       addParkingMessage(
         createMessage("assistant", response.content || "Thought saved.")
       );
@@ -189,13 +207,13 @@ export function ThoughtParkingSheet() {
                       handleSubmit(e);
                     }
                   }}
-                  disabled={isLoading}
+                  disabled={isLoading || !authReady}
                 />
                 <Button
                   type="submit"
                   size="icon"
                   variant="secondary"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || !authReady}
                   className="h-[44px] w-[44px] shrink-0"
                 >
                   <Send className="h-4 w-4" />
