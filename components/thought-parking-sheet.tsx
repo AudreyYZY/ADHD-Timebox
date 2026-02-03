@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppStore, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send, ParkingCircle } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
 
 const createMessage = (
   role: ChatMessage["role"],
@@ -56,7 +55,6 @@ function PendingIndicator() {
 }
 
 export function ThoughtParkingSheet() {
-  const { userId, isLoaded, isSignedIn } = useAuth();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -102,11 +100,7 @@ export function ThoughtParkingSheet() {
     setIsLoading(true);
 
     try {
-      const response = await api.parkThought(
-        messageText,
-        undefined,
-        userId ?? undefined
-      );
+      const response = await api.parkThought(messageText);
       addParkingMessage(
         createMessage("assistant", response.content || "Thought saved.")
       );

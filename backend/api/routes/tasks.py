@@ -37,9 +37,12 @@ def _normalize_task(task: dict) -> dict:
         "title": task.get("title"),
         "start": _format_time(task.get("start")),
         "end": _format_time(task.get("end")),
+        "start_at": task.get("start"),
+        "end_at": task.get("end"),
         "type": task.get("type", "work"),
         "status": task.get("status", "pending"),
         "google_event_id": task.get("google_event_id"),
+        "sync_status": task.get("sync_status"),
     }
 
 
