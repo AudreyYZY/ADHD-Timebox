@@ -17,77 +17,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Mock data for tasks
-const mockTasks: Task[] = [
-  {
-    id: "1",
-    title: "Review design feedback",
-    duration: 15,
-    status: "in-progress",
-    createdAt: new Date(),
-    startedAt: new Date(),
-  },
-  {
-    id: "2",
-    title: "Reply to Sarah's email",
-    duration: 10,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "3",
-    title: "Update project notes",
-    duration: 20,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "4",
-    title: "Quick break + stretch",
-    duration: 5,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "5",
-    title: "Check Slack messages",
-    duration: 10,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "6",
-    title: "Review pull requests",
-    duration: 25,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "7",
-    title: "Write meeting notes",
-    duration: 15,
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "8",
-    title: "Update documentation",
-    duration: 30,
-    status: "pending",
-    createdAt: new Date(),
-  },
-];
-
-// Mock calendar events for today
-const mockCalendarEvents = [
-  { id: "c1", title: "Team standup", time: "10:00 AM", duration: 15 },
-  { id: "c2", title: "Lunch break", time: "12:30 PM", duration: 60 },
-  { id: "c3", title: "1:1 with Alex", time: "3:00 PM", duration: 30 },
-  { id: "c4", title: "Design review", time: "4:00 PM", duration: 45 },
-  { id: "c5", title: "Team sync", time: "5:00 PM", duration: 30 },
-  { id: "c6", title: "Weekly planning", time: "5:30 PM", duration: 60 },
-];
-
 type SectionId = "tasks" | "calendar" | "status";
 
 function formatDuration(minutes: number): string {
@@ -350,9 +279,7 @@ export function Sidebar() {
     return null;
   }
 
-  // Use mock data if no real tasks, otherwise use real tasks
-  const displayTasks = tasks.length > 0 ? tasks : mockTasks;
-  const visibleTasks = displayTasks.filter(
+  const visibleTasks = tasks.filter(
     (t) => t.status !== "completed" || t.id === currentTask?.id
   );
 
@@ -496,16 +423,12 @@ export function Sidebar() {
               isExpanded={expandedSections.has("calendar")}
               onToggle={() => toggleSection("calendar")}
               isMuted={isMuted}
-              badge={mockCalendarEvents.length}
+              badge={0}
             >
-              <div className="space-y-0.5">
-                {mockCalendarEvents.map((event) => (
-                  <CalendarEvent
-                    key={event.id}
-                    event={event}
-                    isMuted={isMuted}
-                  />
-                ))}
+              <div className="py-4 text-center">
+                <p className="text-sm text-muted-foreground/60">
+                  No calendar events synced
+                </p>
               </div>
             </CollapsibleSection>
 
