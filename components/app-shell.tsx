@@ -80,14 +80,15 @@ export function AppShell() {
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
             <span className="sr-only">Timebox</span>
+            {/* Using Next.js Image component or regular img with correct paths for Electron/Next */}
             <img
-              src="/icon-light-32x32.png"
-              alt=""
+              src="./icon-light-32x32.png"
+              alt="Timebox Logo"
               className="h-6 w-6 dark:hidden"
             />
             <img
-              src="/icon-dark-32x32.png"
-              alt=""
+              src="./icon-dark-32x32.png"
+              alt="Timebox Logo"
               className="hidden h-6 w-6 dark:block"
             />
           </div>
