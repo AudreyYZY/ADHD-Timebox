@@ -30,10 +30,6 @@ export function PlanningMode() {
     addPlanningMessage,
     setTasks,
     clearPlanningMessages,
-    setUserState,
-    setCurrentTask,
-    setIsTimerRunning,
-    setTimeRemaining,
   } = useAppStore();
 
   // ✅ IME 处理：避免 Enter 结束组词时直接触发发送
@@ -212,30 +208,15 @@ export function PlanningMode() {
               handleSubmit(e);
             }}
           />
-          <div className="flex flex-col gap-2">
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!input.trim() || isLoading}
-              className="h-[52px] w-[52px]"
-            >
-              <Send className="h-5 w-5" />
-              <span className="sr-only">Send message</span>
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="h-[52px]"
-              onClick={() => {
-                  setCurrentTask({ id: "debug-1", title: "Debug Task", status: "in-progress", duration: 25, createdAt: new Date(), startedAt: new Date() });
-                  setTimeRemaining(25 * 60);
-                  setIsTimerRunning(true);
-                  setUserState("focusing");
-              }}
-            >
-              Debug Focus
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!input.trim() || isLoading}
+            className="h-[52px] w-[52px]"
+          >
+            <Send className="h-5 w-5" />
+            <span className="sr-only">Send message</span>
+          </Button>
         </form>
       </div>
     </div>
